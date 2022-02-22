@@ -2,60 +2,91 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-lambda-go/lambda"
-	"io/ioutil"
+	"github.com/aws/aws-xray-sdk-go/xray"
+	"github.com/itsnoproblem/pokt-lint/linting"
+	"github.com/pkg/errors"
 	"net/http"
-	"time"
-)
-
-const (
-	urlPathSimulateRelay = "v1/client/sim"
-	httpClientTimeoutSec = 10
 )
 
 type LintRequest struct {
 	NodeURL string   `json:"node_url"`
+	NodeID  string   `json:"node_id"`
 	Chains  []string `json:"chain_ids"`
 }
 
 type LintResponse struct {
-	StatusCode int8   `json:"status_code"`
+	StatusCode  float64       `json:"status_code"`
+	Message     string        `json:"message"`
+	PingResult  PingResponse  `json:"ping_result"`
+	RelayResult RelayResponse `json:"relay_result"`
+}
+
+type PingResponse struct {
+	Success    bool    `json:"success"`
+	AvgRTT     float64 `json:"avg_rtt_ms"`
+	PacketLoss float64 `json:"packet_loss"`
+}
+
+type ChainResult struct {
+	ChainID    string `json:"chain_id"`
+	Duration   string `json:"duration"`
+	Successful bool   `json:"successful"`
 	Message    string `json:"message"`
 }
 
-func LambdaRequestHandler(ctx context.Context, name LintRequest) (string, error) {
-	response, err := simulateRelay("", "", []byte(``))
-	if err != nil {
-		return "", err
-	}
-
-	return string(response), nil
+type RelayResponse struct {
+	Chains map[string]ChainResult `json:"chains"`
 }
 
-func simulateRelay(servicerUrl, chainID string, payload json.RawMessage) (json.RawMessage, error) {
-	url := "https://node-000.pokt.gaagl.com/v1" //fmt.Sprintf("%s/%s", servicerUrl, urlPathSimulateRelay)
-	client := http.Client{
-		Timeout: httpClientTimeoutSec * time.Second,
+func LambdaRequestHandler(ctx context.Context, req LintRequest) (LintResponse, error) {
+	httpClient := xray.Client(http.DefaultClient)
+	if httpClient == nil {
+		return LintResponse{}, errors.New("LambdaRequestHandler: failed to initialize http client")
 	}
 
-	resp, err := client.Get(url)
+	linter, err := linting.NewNodeChecker(req.NodeID, req.NodeURL, *httpClient)
 	if err != nil {
-		return nil, fmt.Errorf("simulateRelay: %s", err)
+		return LintResponse{}, fmt.Errorf("LambdaRequestHandler: %s", err)
 	}
 
-	defer resp.Body.Close()
+	var pingResponse PingResponse
+	pingRes, err := linter.RunPingTest(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("doRequest: %s", err)
+		pingResponse = PingResponse{
+			Success: false,
+		}
+	} else {
+		pingResponse = PingResponse{
+			Success:    true,
+			AvgRTT:     float64(pingRes.AvgRtt.Milliseconds()),
+			PacketLoss: pingRes.PacketLoss,
+		}
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	relayResult, err := linter.RunRelayTests()
 	if err != nil {
-		return nil, fmt.Errorf("doRequest: [%d] %s", resp.StatusCode, err)
+		return LintResponse{}, fmt.Errorf("LambdaRequestHandler: %s", err)
 	}
 
-	return body, nil
+	chainResult := make(map[string]ChainResult, len(relayResult))
+	for _, ch := range relayResult {
+		chainResult[ch.ChainID] = ChainResult{
+			ChainID:    ch.ChainID,
+			Duration:   "",
+			Successful: ch.Successful,
+			Message:    ch.Message,
+		}
+	}
+
+	message := "some message could go here"
+	return LintResponse{
+		StatusCode:  200,
+		Message:     message,
+		PingResult:  pingResponse,
+		RelayResult: RelayResponse{Chains: chainResult},
+	}, nil
 }
 
 func main() {

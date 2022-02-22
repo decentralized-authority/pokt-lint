@@ -22,11 +22,11 @@ func NewService(hostname string) (Service, error) {
 	}
 
 	pinger.Count = defaultNumPings
-	return &service{pinger: *pinger}, nil
+	return &service{pinger: pinger}, nil
 }
 
 type service struct {
-	pinger ping.Pinger
+	pinger *ping.Pinger
 }
 
 func (s *service) PingHost(ctx context.Context) (*ping.Statistics, error) {
