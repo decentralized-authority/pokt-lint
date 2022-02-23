@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
+	"log"
 	"net/http"
+	"strconv"
 )
 
 const (
@@ -19,7 +21,7 @@ const (
 type Provider interface {
 	Height() (uint, error)
 	Servicer(address string) (Node, error)
-	SimulateRelay(chainID, path string, payload json.RawMessage) (json.RawMessage, error)
+	SimulateRelay(chainID, path string, payload json.RawMessage) (map[string]interface{}, error)
 }
 
 func NewProvider(c http.Client, pocketRpcURL string) Provider {
@@ -39,10 +41,51 @@ func (p provider) Height() (uint, error) {
 }
 
 func (p provider) Servicer(address string) (Node, error) {
-	return Node{}, nil
+	var fail = func(err error) (Node, error) {
+		return Node{}, fmt.Errorf("Services: %s", err)
+	}
+
+	url := fmt.Sprintf("%s/%s", p.pocketRpcURL, urlPathGetNode)
+	nodeRequest := queryNodeRequest{Address: address}
+	var nodeResponse queryNodeResponse
+
+	body, err := p.doRequest(url, nodeRequest)
+	if err != nil {
+		return fail(err)
+	}
+
+	err = json.Unmarshal(body, &nodeResponse)
+	if err != nil {
+		return fail(err)
+	}
+
+	chains := make([]Chain, len(nodeResponse.Chains))
+	for i, chainID := range nodeResponse.Chains {
+		ch, err := ChainFromID(chainID)
+		if err != nil {
+			fail(err)
+		}
+
+		chains[i] = ch
+	}
+
+	stakedBal, err := strconv.ParseUint(nodeResponse.StakedBalance, 10, 64)
+	if err != nil {
+		return Node{}, fmt.Errorf("Node: %s", err)
+	}
+
+	return Node{
+		Address:       nodeResponse.Address,
+		Pubkey:        nodeResponse.Pubkey,
+		ServiceURL:    nodeResponse.ServiceURL,
+		StakedBalance: uint(stakedBal),
+		IsJailed:      nodeResponse.IsJailed,
+		Chains:        chains,
+		IsSynced:      false,
+	}, nil
 }
 
-func (p provider) SimulateRelay(chainID, path string, payload json.RawMessage) (json.RawMessage, error) {
+func (p provider) SimulateRelay(chainID, path string, payload json.RawMessage) (map[string]interface{}, error) {
 	url := fmt.Sprintf("%s/%s", p.pocketRpcURL, urlPathSimulateRelay)
 
 	simRequest := relayRequest{
@@ -57,10 +100,17 @@ func (p provider) SimulateRelay(chainID, path string, payload json.RawMessage) (
 
 	resp, err := p.doRequest(url, simRequest)
 	if err != nil {
-		return nil, fmt.Errorf("provider.SimulateRelay: %s", err)
+		return nil, err
 	}
 
-	return resp, nil
+	s, _ := strconv.Unquote(string(resp))
+	m := make(map[string]interface{})
+	err = json.Unmarshal([]byte(s), &m)
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
 }
 
 func (p provider) doRequest(url string, reqObj interface{}) ([]byte, error) {
@@ -69,30 +119,38 @@ func (p provider) doRequest(url string, reqObj interface{}) ([]byte, error) {
 	if reqObj != nil {
 		reqBody, err = json.Marshal(reqObj)
 		if err != nil {
-			return nil, fmt.Errorf("doRequest: %s", err)
+			return nil, NewRelayError(500, err)
 		}
 	}
 	req := bytes.NewBuffer(reqBody)
 
 	clientReq, err := http.NewRequest(http.MethodPost, url, req)
 	if err != nil {
-		return nil, fmt.Errorf("doRequest: %s", err)
+		return nil, NewRelayError(500, err)
 	}
 	clientReq.Header.Set("Content-type", contentTypeJSON)
 
 	resp, err := p.client.Do(clientReq)
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Default().Printf("error closing response body: %s", err)
+		}
+	}(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("doRequest: %s", err)
+		return nil, NewRelayError(500, err)
 	}
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, NewRelayError(resp.StatusCode, err)
+	}
+
+	log.Default().Printf("Pocket Provider: (%d) %s", resp.StatusCode, url)
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(fmt.Sprintf("provider.doRequest: got unexpected response status %s - %s", resp.Status, string(reqBody)))
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("doRequest: %s", err)
+		var str string
+		_ = json.Unmarshal(body, &str)
+		return nil, NewRelayError(resp.StatusCode, errors.New(str))
 	}
 
 	return body, nil

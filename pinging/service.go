@@ -3,7 +3,9 @@ package pinging
 import (
 	"context"
 	"fmt"
-	"github.com/go-ping/ping"
+	nethttp "net/http"
+
+	"github.com/itsnoproblem/pokt-lint/http"
 )
 
 const (
@@ -11,33 +13,26 @@ const (
 )
 
 type Service interface {
-	PingHost(ctx context.Context) (*ping.Statistics, error)
-	SetNumPings(ctx context.Context, num int)
+	PingHost(ctx context.Context) (*http.PingStats, error)
 }
 
-func NewService(hostname string) (Service, error) {
-	pinger, err := ping.NewPinger(hostname)
-	if err != nil {
-		return &service{}, nil
-	}
-
-	pinger.Count = defaultNumPings
+func NewService(client nethttp.Client, url string) (Service, error) {
+	pinger := http.NewPinger(client, url)
 	return &service{pinger: pinger}, nil
 }
 
 type service struct {
-	pinger *ping.Pinger
+	pinger *http.Pinger
 }
 
-func (s *service) PingHost(ctx context.Context) (*ping.Statistics, error) {
-	err := s.pinger.Run()
+func (s *service) PingHost(ctx context.Context) (*http.PingStats, error) {
+	stats, err := s.pinger.Run()
 	if err != nil {
 		return nil, fmt.Errorf("PingHost: %s", err)
 	}
-
-	return s.pinger.Statistics(), nil
+	return stats, nil
 }
 
-func (s *service) SetNumPings(ctx context.Context, num int) {
+func (s *service) SetNumPings(ctx context.Context, num int64) {
 	s.pinger.Count = num
 }
