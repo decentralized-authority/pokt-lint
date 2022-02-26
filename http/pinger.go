@@ -22,11 +22,11 @@ type Pinger struct {
 }
 
 type PingStats struct {
-	NumSent   int64 `json:"num_sent"`
-	NumOk     int64 `json:"num_ok"`
-	MinTimeMS int64 `json:"min_time_ms"`
-	MaxTimeMS int64 `json:"max_time_ms"`
-	AvgTimeMS int64 `json:"avg_time_ms"`
+	NumSent   int64   `json:"num_sent"`
+	NumOk     int64   `json:"num_ok"`
+	MinTimeMS float64 `json:"min_time_ms"`
+	MaxTimeMS float64 `json:"max_time_ms"`
+	AvgTimeMS float64 `json:"avg_time_ms"`
 }
 
 func NewPinger(client http.Client, url string) *Pinger {
@@ -70,16 +70,16 @@ func (p *Pinger) Run() (*PingStats, error) {
 			success++
 		}
 
-		log.Default().Printf("Ping %s: %d (%d ms)", url, resp.StatusCode, duration.Milliseconds())
+		log.Default().Printf("Ping %s: %d (%s ms)", url, resp.StatusCode, duration.String())
 		time.Sleep(pingDelayMS * time.Millisecond)
 	}
 
 	p.stats = &PingStats{
 		NumSent:   p.Count,
 		NumOk:     success,
-		MinTimeMS: min.Milliseconds(),
-		MaxTimeMS: max.Milliseconds(),
-		AvgTimeMS: total.Milliseconds() / p.Count,
+		MinTimeMS: float64(min.Microseconds()) / 1000,
+		MaxTimeMS: float64(max.Microseconds()) / 1000,
+		AvgTimeMS: float64(total.Microseconds()/p.Count) / 1000,
 	}
 
 	return p.stats, nil

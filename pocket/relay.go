@@ -2,18 +2,12 @@ package pocket
 
 import (
 	"fmt"
+	"github.com/itsnoproblem/pokt-lint/rpc"
 )
 
-type relayRequest struct {
-	RelayNetworkID string              `json:"relay_network_id"`
-	Payload        relayRequestPayload `json:"payload"`
-}
-
-type relayRequestPayload struct {
-	Data    string            `json:"data"`
-	Method  string            `json:"method"`
-	Path    string            `json:"path"`
-	Headers map[string]string `json:"headers"`
+type RelayRequest struct {
+	RelayNetworkID string      `json:"relay_network_id"`
+	Payload        rpc.Payload `json:"payload"`
 }
 
 type RelayError struct {

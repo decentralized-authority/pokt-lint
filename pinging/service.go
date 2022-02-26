@@ -8,10 +8,6 @@ import (
 	"github.com/itsnoproblem/pokt-lint/http"
 )
 
-const (
-	defaultNumPings = 5
-)
-
 type Service interface {
 	PingHost(ctx context.Context) (*http.PingStats, error)
 }

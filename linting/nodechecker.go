@@ -8,6 +8,7 @@ import (
 	"github.com/itsnoproblem/pokt-lint/http"
 	"github.com/itsnoproblem/pokt-lint/pinging"
 	"github.com/itsnoproblem/pokt-lint/pocket"
+	"github.com/itsnoproblem/pokt-lint/rpc"
 	"github.com/itsnoproblem/pokt-lint/timer"
 	"net"
 	nethttp "net/http"
@@ -31,7 +32,7 @@ type RelayTestResult struct {
 	ChainID    string                 `json:"chain_id"`
 	Successful bool                   `json:"success"`
 	Data       map[string]interface{} `json:"data"`
-	DurationMS int64                  `json:"duration_ms"`
+	DurationMS float64                `json:"duration_ms"`
 }
 
 func NewNodeChecker(nodeID, nodeAddress string, httpClient nethttp.Client) (*nodeChecker, error) {
@@ -76,38 +77,34 @@ func (c *nodeChecker) RunRelayTests() (map[string]RelayTestResult, error) {
 		var success bool
 		msg := make(map[string]interface{})
 
-		t := timer.Start()
-		req, err := RPCRequestForChainID(chain.ID)
-		if err != nil {
-			success = false
-			msg = map[string]interface{}{
-				"error": fmt.Sprintf("nodeChecker.RunRelayTests: %s", err),
-				"code":  500,
-			}
-		} else {
-			res, err := c.pocketProvider.SimulateRelay(req.ChainID, req.Path, req.Payload)
-			if err != nil {
-				relayErr, ok := err.(pocket.RelayError)
-				if !ok {
-					relayErr = pocket.NewRelayError(500, err)
-				}
-
-				success = false
-				msg = map[string]interface{}{
-					"error": relayErr.Err,
-					"code":  relayErr.Code,
-				}
-			} else {
-				success = true
-				msg = res
-			}
+		req := pocket.RelayRequest{
+			RelayNetworkID: chain.ID,
+			Payload:        rpc.NewPayload(chain.ID),
 		}
 
-		chains[req.ChainID] = RelayTestResult{
-			ChainID:    req.ChainID,
+		t := timer.Start()
+		res, err := c.pocketProvider.SimulateRelay(req)
+		if err != nil {
+			relayErr, ok := err.(pocket.RelayError)
+			if !ok {
+				relayErr = pocket.NewRelayError(500, err)
+			}
+
+			success = false
+			msg = map[string]interface{}{
+				"error": relayErr.Err,
+				"code":  relayErr.Code,
+			}
+		} else {
+			success = true
+			msg = res
+		}
+
+		chains[chain.ID] = RelayTestResult{
+			ChainID:    chain.ID,
 			Successful: success,
 			Data:       msg,
-			DurationMS: t.Elapsed().Milliseconds(),
+			DurationMS: float64(t.Elapsed().Microseconds()) / 1000,
 		}
 	}
 	return chains, nil

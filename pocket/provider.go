@@ -21,7 +21,7 @@ const (
 type Provider interface {
 	Height() (uint, error)
 	Servicer(address string) (Node, error)
-	SimulateRelay(chainID, path string, payload json.RawMessage) (map[string]interface{}, error)
+	SimulateRelay(req RelayRequest) (map[string]interface{}, error)
 }
 
 func NewProvider(c http.Client, pocketRpcURL string) Provider {
@@ -85,18 +85,8 @@ func (p provider) Servicer(address string) (Node, error) {
 	}, nil
 }
 
-func (p provider) SimulateRelay(chainID, path string, payload json.RawMessage) (map[string]interface{}, error) {
+func (p provider) SimulateRelay(simRequest RelayRequest) (map[string]interface{}, error) {
 	url := fmt.Sprintf("%s/%s", p.pocketRpcURL, urlPathSimulateRelay)
-
-	simRequest := relayRequest{
-		RelayNetworkID: chainID,
-		Payload: relayRequestPayload{
-			Data:    string(payload),
-			Method:  "POST",
-			Path:    path,
-			Headers: make(map[string]string, 0),
-		},
-	}
 
 	resp, err := p.doRequest(url, simRequest)
 	if err != nil {

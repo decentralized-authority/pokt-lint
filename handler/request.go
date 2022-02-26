@@ -3,9 +3,10 @@ package handler
 import (
 	"context"
 	"fmt"
-	"github.com/go-ping/ping"
+	"github.com/itsnoproblem/pokt-lint/http"
 	"github.com/itsnoproblem/pokt-lint/linting"
-	"net/http"
+	nethttp "net/http"
+	"time"
 )
 
 const (
@@ -20,12 +21,12 @@ type LintRequest struct {
 
 type LintResponse struct {
 	StatusCode  float64                            `json:"status_code"`
-	PingResult  *ping.Statistics                   `json:"ping_result"`
+	PingResult  *http.PingStats                    `json:"ping_result"`
 	RelayResult map[string]linting.RelayTestResult `json:"relay_result"`
 }
 
 func LambdaRequestHandler(ctx context.Context, req LintRequest) (LintResponse, error) {
-	httpClient := http.Client{}
+	httpClient := nethttp.Client{Timeout: httpClientTimeoutSec * time.Second}
 	linter, err := linting.NewNodeChecker(req.NodeID, req.NodeURL, httpClient)
 	if err != nil {
 		return LintResponse{}, fmt.Errorf("LambdaRequestHandler: %s", err)

@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"github.com/itsnoproblem/pokt-lint/http"
 	nethttp "net/http"
+	"time"
 )
 
 const (
-	httpClientTimeoutSec = 10
+	httpClientTimeoutSec = 20
 )
 
 type LintRequest struct {
@@ -24,7 +25,9 @@ type LintResponse struct {
 }
 
 func HandleRequest(ctx context.Context, req LintRequest) (LintResponse, error) {
-	httpClient := nethttp.Client{}
+	httpClient := nethttp.Client{
+		Timeout: httpClientTimeoutSec * time.Second,
+	}
 	linter, err := NewNodeChecker(req.NodeID, req.NodeURL, httpClient)
 	if err != nil {
 		return LintResponse{}, fmt.Errorf("LambdaRequestHandler: %s", err)
