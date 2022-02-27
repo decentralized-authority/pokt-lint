@@ -15,11 +15,11 @@ const pingTimeoutMS = 1500
 
 func main() {
 	numPings := flag.Int64("num", 1, "-num 10")
+	nodeURL := flag.String("url", "", "-url https://www.example.com")
 	flag.Parse()
 
-	nodeURL := flag.Arg(0)
-	if nodeURL == "" {
-		fmt.Print("Usage: pingtest <node-url>\n")
+	if *nodeURL == "" {
+		flag.Usage()
 		os.Exit(1)
 	}
 
@@ -28,7 +28,7 @@ func main() {
 	}
 
 	ctx := context.Background()
-	svc, err := pinging.NewService(c, nodeURL)
+	svc, err := pinging.NewService(c, *nodeURL)
 	svc.SetNumPings(ctx, *numPings)
 	if err != nil {
 		panic(err)

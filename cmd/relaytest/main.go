@@ -8,12 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/itsnoproblem/pokt-lint/linting"
-)
-
-const (
-	testNodeURL     = "https://YOUR-NODE_URL"
-	testNodeAddress = "YOUR-NODE-ADDRESS"
+	"github.com/itsnoproblem/pokt-lint/relaying"
 )
 
 func main() {
@@ -29,14 +24,14 @@ func main() {
 
 	chains := strings.Split(*chainsArg, ",")
 	ctx := context.Background()
-	req := linting.LintRequest{
+	req := relaying.RelayTestRequest{
 		NodeURL: *nodeURL,
 		NodeID:  *nodeID,
 		Chains:  chains,
 	}
-	response, err := linting.HandleRequest(ctx, req)
+	response, err := relaying.HandleRequest(ctx, req)
 	if err != nil {
-		panic(fmt.Sprintf("panic: got error from LambdaRequestHandler: %s", err))
+		panic(fmt.Sprintf("panic: got error from LambdaRelayTestHandler: %s", err))
 	}
 
 	output, err := json.Marshal(response)

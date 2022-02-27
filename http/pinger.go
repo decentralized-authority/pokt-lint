@@ -1,11 +1,9 @@
 package http
 
 import (
-	"fmt"
 	"github.com/itsnoproblem/pokt-lint/timer"
 	"log"
 	"net/http"
-	"net/url"
 	"time"
 )
 
@@ -41,18 +39,11 @@ func (p *Pinger) Run() (*PingStats, error) {
 	var total, min, max time.Duration
 	success := int64(0)
 
-	parsed, err := url.Parse(p.URL)
-	if err != nil {
-		return nil, fmt.Errorf("Pinger.Run: %s", err)
-	}
-
-	url := fmt.Sprintf("%s://%s%s", parsed.Scheme, parsed.Host, "/v1")
-
 	for i := int64(0); i < p.Count; i++ {
 		t := timer.Start()
-		resp, err := p.client.Get(url)
+		resp, err := p.client.Get(p.URL)
 		if err != nil {
-			log.Default().Printf("Ping %s: %s", url, err)
+			log.Default().Printf("Ping %s: %s", p.URL, err)
 			continue
 		}
 		duration := t.Elapsed()
@@ -70,7 +61,7 @@ func (p *Pinger) Run() (*PingStats, error) {
 			success++
 		}
 
-		log.Default().Printf("Ping %s: %d (%s ms)", url, resp.StatusCode, duration.String())
+		log.Default().Printf("Ping %s: %d (%s ms)", p.URL, resp.StatusCode, duration.String())
 		time.Sleep(pingDelayMS * time.Millisecond)
 	}
 
