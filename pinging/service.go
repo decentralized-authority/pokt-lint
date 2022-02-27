@@ -10,6 +10,7 @@ import (
 
 type Service interface {
 	PingHost(ctx context.Context) (*http.PingStats, error)
+	SetNumPings(ctx context.Context, num int64)
 }
 
 func NewService(client nethttp.Client, url string) (Service, error) {

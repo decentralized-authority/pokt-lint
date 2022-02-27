@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	defaultPingCount = 5
+	defaultPingCount = 10
 	pingDelayMS      = 500
 )
 
