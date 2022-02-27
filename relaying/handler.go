@@ -23,14 +23,14 @@ func HandleRequest(ctx context.Context, req RelayTestRequest) (RelayTestResponse
 	httpClient := nethttp.Client{
 		Timeout: httpClientTimeoutSec * time.Second,
 	}
-	linter, err := NewNodeChecker(req.NodeID, req.NodeURL, httpClient)
+	linter, err := NewNodeChecker(req.NodeID, req.NodeURL, req.Chains, httpClient)
 	if err != nil {
-		return RelayTestResponse{}, fmt.Errorf("LambdaRelayTestHandler: %s", err)
+		return RelayTestResponse{}, fmt.Errorf("relaying.HandleRequest: %s", err)
 	}
 
 	relayRes, err := linter.RunRelayTests()
 	if err != nil {
-		return RelayTestResponse{}, fmt.Errorf("LambdaRelayTestHandler: %s", err)
+		return RelayTestResponse{}, fmt.Errorf("relaying.HandleRequest: %s", err)
 	}
 
 	return relayRes, nil

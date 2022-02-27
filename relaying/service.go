@@ -4,24 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-ping/ping"
-	"github.com/itsnoproblem/pokt-lint/http"
-	"github.com/itsnoproblem/pokt-lint/pinging"
 	"github.com/itsnoproblem/pokt-lint/pocket"
 	"github.com/itsnoproblem/pokt-lint/rpc"
 	"github.com/itsnoproblem/pokt-lint/timer"
-	"net"
 	nethttp "net/http"
-	"net/url"
 )
 
-type NodeChecker interface {
-	RunPingTest(ctx context.Context) (*ping.Statistics, error)
-	RunRelayTests(ctx context.Context) (map[string]interface{}, error)
+type Service interface {
+	RunRelayTests(ctx context.Context) (map[string]RelayTestResult, error)
 }
 
 type nodeChecker struct {
-	pinger         pinging.Service
 	pocketProvider pocket.Provider
 	nodeID         string
 	nodeURL        string
@@ -35,20 +28,22 @@ type RelayTestResult struct {
 	DurationMS float64                `json:"duration_ms"`
 }
 
-func NewNodeChecker(nodeID, nodeAddress string, httpClient nethttp.Client) (*nodeChecker, error) {
+func NewNodeChecker(nodeID, nodeAddress string, chains []string, httpClient nethttp.Client) (*nodeChecker, error) {
+	var err error
 	empty := nodeChecker{}
-	pingSvc, err := pinging.NewService(httpClient, nodeAddress)
-	if err != nil {
-		return &empty, fmt.Errorf("relaying.NewNodeChecker: %s", err)
-	}
-
+	chainObjects := make([]pocket.Chain, len(chains))
 	pocketProvider := pocket.NewProvider(httpClient, nodeAddress)
 
+	for i, c := range chains {
+		if chainObjects[i], err = pocket.ChainFromID(c); err != nil {
+		}
+	}
+
 	nc := nodeChecker{
-		pinger:         pingSvc,
 		pocketProvider: pocketProvider,
 		nodeID:         nodeID,
 		nodeURL:        nodeAddress,
+		nodeChains:     chainObjects,
 	}
 
 	if err := nc.init(); err != nil {
@@ -58,21 +53,12 @@ func NewNodeChecker(nodeID, nodeAddress string, httpClient nethttp.Client) (*nod
 	return &nc, nil
 }
 
-func (c *nodeChecker) RunPingTest(ctx context.Context) (*http.PingStats, error) {
-	res, err := c.pinger.PingHost(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("nodeChecker.RunPingtest: %s", err)
-	}
-
-	return res, nil
-}
-
 func (c *nodeChecker) RunRelayTests() (map[string]RelayTestResult, error) {
-	chains := make(map[string]RelayTestResult, len(c.nodeChains))
 	if len(c.nodeChains) < 1 {
 		return nil, errors.New(fmt.Sprintf("No chains for node %s", c.nodeID))
 	}
 
+	chains := make(map[string]RelayTestResult, len(c.nodeChains))
 	for _, chain := range c.nodeChains {
 		var success bool
 		msg := make(map[string]interface{})
@@ -111,6 +97,10 @@ func (c *nodeChecker) RunRelayTests() (map[string]RelayTestResult, error) {
 }
 
 func (c *nodeChecker) init() error {
+	if len(c.nodeChains) > 0 {
+		return nil
+	}
+
 	node, err := c.pocketProvider.Servicer(c.nodeID)
 	if err != nil {
 		return fmt.Errorf("init: %s", err)
@@ -119,18 +109,4 @@ func (c *nodeChecker) init() error {
 	c.nodeURL = node.ServiceURL
 	c.nodeChains = node.Chains
 	return nil
-}
-
-func ipAddressFromURL(u string) (string, error) {
-	parsed, err := url.Parse(u)
-	if err != nil {
-		return "", fmt.Errorf("ipAddressFromURL: %s", err)
-	}
-
-	addr, err := net.ResolveIPAddr("ip4:1", parsed.Host)
-	if err != nil {
-		return "", fmt.Errorf("ipAddressFromURL: %s", err)
-	}
-
-	return addr.String(), nil
 }

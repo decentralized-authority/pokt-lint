@@ -12,6 +12,10 @@ build-commands:
 	go build -o ${BUILD_DIR}/${PING_TEST_BINARY} ${PING_TEST_TARGET}
 	go build -o ${BUILD_DIR}/${RELAY_TEST_BINARY} ${RELAY_TEST_TARGET}
 
+build-lambda:
+	make lambda-pingtest
+	make lambda-relaytest
+
 lambda-pingtest:
 	GOOS=linux go build -o ${BUILD_DIR}/${LAMBDA_PING_TEST_BINARY} ${LAMBDA_PING_TEST_TARGET}
 	cd ${BUILD_DIR} && zip ${LAMBDA_PING_TEST_BINARY}.zip ${LAMBDA_PING_TEST_BINARY}
