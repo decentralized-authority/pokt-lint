@@ -1,14 +1,38 @@
 # POKT Lint
 An open-source diagnostic tool for Pocket Network node runners.
 
+## Using the public API
+
+The public deployment of this tool is available at the following baseURL:
+https://2eqrf8goof.execute-api.us-east-1.amazonaws.com/test
+
+### 👉 [Interactive RPC Spec](https://editor.swagger.io/?url=https://raw.githubusercontent.com/itsnoproblem/pokt-lint/master/doc/node-checker-rpc.yml)
+
+---
+
+## Deploying to AWS Lambda
+
+Build the tests as AWS Lambda functions. A public deployment is maintained on AWS.  To build executables that can be uploaded to
+AWS Lambda, run the following command:
+```
+make build-lambda
+```
+
+This will create 2 archives that can be uploaded to their corresponding
+Lambda functions:
+- `build/LambdaPingTestHandler.zip`
+- `build/LambdaRelayTestHandler.zip`
+
+---
+
 ## Build the test commands locally
 This package provides 2 commands that can be used to test the operation of Pocket Network nodes: 
 - `pingtest` measures the latency between the test client and a node
 - `relaytest` runs relay tests on a node 
 
-The commands can be built and run directly on your host, or in a docker container.
+The commands can be built and run directly on your host, or they can be built and run in a docker container.
 
----
+
 
 ### Option 1) Build directly on your host
 _Requirements:_
@@ -60,56 +84,3 @@ Usage of ./build/relaytest:
     	node url
 ```
 
-## Build the tests as AWS Lambda functions
-
-A public deployment is maintained on AWS.  To build executables that can be uploaded to 
-AWS Lambda, run the following command:
-```
-make build-lambda
-```
-
-This will create 2 archives that can be uploaded to their corresponding 
-Lambda functions:
-- `build/LambdaPingTestHandler.zip`
-- `build/LambdaRelayTestHandler.zip`
-
-## Use the public API
-
-The public deployment of this tool is available at the following baseURL:
-https://2eqrf8goof.execute-api.us-east-1.amazonaws.com/test
-
----
-
-#### Ping Test:
-`POST {baseURL}/ping-test`
-
-Request format:
-
-`Content-Type: encoding/json`
-
-Request Body: 
-```
-{
-    "node_url": "https://www.example-node.com"
-}
- ```
-
----
-
-#### Relay Test:
-`POST {baseURL}/relay-test`
-
-Request format:
-
-`Content-Type: encoding/json`
-
-Request Body:
-> `chain_ids` are optional.  If this key is omitted, each of the staked chains for the supplied
-> node ID will be tested.
-```
-{
-    "node_url": "https://www.example-node.com",
-    "node_id": "82bdd725266c305ca1598e6cac1102fec3ed9d7e",
-    "chain_ids": ["0001","0021","0027"]
-}
- ```
