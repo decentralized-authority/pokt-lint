@@ -1,0 +1,62 @@
+openapi: 3.0.0
+info:
+  title: Node Checker API (POKT Lint)
+  version: 1.0.0
+servers:
+  - url: http://{{baseurl}}
+  - url: https://us-east-1-lint.pokt.tools
+paths:
+  /relay-test:
+    post:
+      tags:
+        - default
+      summary: Relay Tests
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                node_url: https://node-000.pokt.gaagl.com
+                node_id: dac663ff8b27db0efa78d068ba938925fc412bc5
+                chain_ids:
+                  - '0001'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  "0001":
+                    chain_id: "0001"
+                    success: true
+                    duration_ms: 59.941
+
+
+  /ping-test:
+    post:
+      tags:
+        - default
+      summary: Ping Test
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                node_url: https://node-000.pokt.gaagl.com
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  num_sent: 10
+                  num_ok: 10
+                  min_time_ms: 37.058
+                  max_time_ms: 97.027
+                  avg_time_ms: 44.948
