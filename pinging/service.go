@@ -3,8 +3,6 @@ package pinging
 import (
 	"context"
 	"fmt"
-	nethttp "net/http"
-
 	"github.com/itsnoproblem/pokt-lint/http"
 )
 
@@ -13,7 +11,7 @@ type Service interface {
 	SetNumPings(ctx context.Context, num int64)
 }
 
-func NewService(client nethttp.Client, url string) (Service, error) {
+func NewService(client http.Client, url string) (Service, error) {
 	pinger := http.NewPinger(client, url)
 	return &service{pinger: pinger}, nil
 }

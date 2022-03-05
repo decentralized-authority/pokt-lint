@@ -24,11 +24,7 @@ type ClientWithLogger struct {
 	logger log.Logger
 }
 
-func (c ClientWithLogger) logError(msg string, err error) {
-	_ = c.logger.Log("type", "ERROR", "loc", log.Caller(2), "error", fmt.Errorf("%s: %s", msg, err))
-}
-
-func (c ClientWithLogger) Do(req *http.Request) (*http.Response, error) {
+func (c *ClientWithLogger) Do(req *http.Request) (*http.Response, error) {
 	t := timer.Start()
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -40,7 +36,7 @@ func (c ClientWithLogger) Do(req *http.Request) (*http.Response, error) {
 	return resp, nil
 }
 
-func (c ClientWithLogger) Get(url string) (*http.Response, error) {
+func (c *ClientWithLogger) Get(url string) (*http.Response, error) {
 	t := timer.Start()
 	resp, err := c.client.Get(url)
 	if err != nil {
@@ -51,6 +47,10 @@ func (c ClientWithLogger) Get(url string) (*http.Response, error) {
 	return resp, nil
 }
 
-func (c ClientWithLogger) Log(args ...interface{}) error {
+func (c *ClientWithLogger) Log(args ...interface{}) error {
 	return c.logger.Log(args)
+}
+
+func (c *ClientWithLogger) logError(msg string, err error) {
+	_ = c.Log("type", "ERROR", "loc", log.Caller(2), "error", fmt.Errorf("%s: %s", msg, err))
 }

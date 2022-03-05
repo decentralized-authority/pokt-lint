@@ -28,7 +28,7 @@ func main() {
 	}
 
 	ctx := context.Background()
-	svc, err := pinging.NewService(c, *nodeURL)
+	svc, err := pinging.NewService(&c, *nodeURL)
 	svc.SetNumPings(ctx, *numPings)
 	if err != nil {
 		panic(err)

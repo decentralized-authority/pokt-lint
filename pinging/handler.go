@@ -16,15 +16,17 @@ type PingTestRequest struct {
 	NodeURL string `json:"node_url"`
 }
 
+type logger struct {
+}
 type PingTestResponse *http.PingStats
 
 func HandleRequest(ctx context.Context, req PingTestRequest) (PingTestResponse, error) {
 	httpClient := nethttp.Client{
 		Timeout: httpClientTimeoutSec * time.Second,
 	}
-
+	
 	url := fmt.Sprintf("%s/v1", req.NodeURL)
-	pingSvc, err := NewService(httpClient, url)
+	pingSvc, err := NewService(&httpClient, url)
 	if err != nil {
 		return nil, fmt.Errorf("pinging.HandleRequest: %s", err)
 	}
