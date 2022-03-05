@@ -16,7 +16,7 @@ type RelayError struct {
 }
 
 func (r RelayError) Error() string {
-	return fmt.Sprintf("(%s) %s", r.Code, r.Err)
+	return fmt.Sprintf("(%d) %s", r.Code, r.Err)
 }
 
 func NewRelayError(code int, err error) RelayError {
