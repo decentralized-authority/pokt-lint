@@ -21,13 +21,6 @@ type nodeChecker struct {
 	nodeChains     []pocket.Chain
 }
 
-type RelayTestResult struct {
-	ChainID    string                 `json:"chain_id"`
-	Successful bool                   `json:"success"`
-	Data       map[string]interface{} `json:"data"`
-	DurationMS float64                `json:"duration_ms"`
-}
-
 func NewNodeChecker(nodeID, nodeAddress string, chains []string, httpClient nethttp.Client) (*nodeChecker, error) {
 	var err error
 	empty := nodeChecker{}

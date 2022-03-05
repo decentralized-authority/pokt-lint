@@ -9,9 +9,10 @@ import (
 
 type Client interface {
 	Do(req *http.Request) (*http.Response, error)
+	Get(url string) (*http.Response, error)
 }
 
-func NewClientWithLogger(c http.Client, l log.Logger) Client {
+func NewClientWithLogger(c Client, l log.Logger) Client {
 	return &ClientWithLogger{
 		client: c,
 		logger: l,
@@ -19,22 +20,34 @@ func NewClientWithLogger(c http.Client, l log.Logger) Client {
 }
 
 type ClientWithLogger struct {
-	client http.Client
+	client Client
 	logger log.Logger
 }
 
-func (c ClientWithLogger) Do(req *http.Request) (*http.Response, error) {
-	logError := func(err error) {
-		_ = c.logger.Log("type", "ERROR", "loc", log.Caller(2), "error", fmt.Errorf("clientWithLogger.Do: %s", err))
-	}
+func (c ClientWithLogger) logError(msg string, err error) {
+	_ = c.logger.Log("type", "ERROR", "loc", log.Caller(2), "error", fmt.Errorf("%s: %s", msg, err))
+}
 
+func (c ClientWithLogger) Do(req *http.Request) (*http.Response, error) {
 	t := timer.Start()
 	resp, err := c.client.Do(req)
 	if err != nil {
-		logError(err)
+		c.logError("ClientWithLogger.Do", err)
+		return resp, err
 	}
 
 	_ = c.logger.Log("type", "INFO", "url", req.URL.String(), "took", t.Elapsed().String())
+	return resp, nil
+}
+
+func (c ClientWithLogger) Get(url string) (*http.Response, error) {
+	t := timer.Start()
+	resp, err := c.client.Get(url)
+	if err != nil {
+		c.logError("ClientWithLogger.Get", err)
+		return resp, err
+	}
+	_ = c.logger.Log("type", "INFO", "url", url, "took", t.Elapsed().String())
 	return resp, nil
 }
 

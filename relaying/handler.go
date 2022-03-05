@@ -17,6 +17,13 @@ type RelayTestRequest struct {
 	Chains  []string `json:"chain_ids"`
 }
 
+type RelayTestResult struct {
+	ChainID    string                 `json:"chain_id"`
+	Successful bool                   `json:"success"`
+	Data       map[string]interface{} `json:"data"`
+	DurationMS float64                `json:"duration_ms"`
+}
+
 type RelayTestResponse map[string]RelayTestResult
 
 func HandleRequest(ctx context.Context, req RelayTestRequest) (RelayTestResponse, error) {

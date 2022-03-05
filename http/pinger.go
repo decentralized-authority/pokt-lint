@@ -3,7 +3,6 @@ package http
 import (
 	"github.com/itsnoproblem/pokt-lint/timer"
 	"log"
-	"net/http"
 	"time"
 )
 
@@ -16,7 +15,7 @@ type Pinger struct {
 	Count  int64
 	URL    string
 	stats  *PingStats
-	client http.Client
+	client Client
 }
 
 type PingStats struct {
@@ -27,7 +26,7 @@ type PingStats struct {
 	AvgTimeMS float64 `json:"avg_time_ms"`
 }
 
-func NewPinger(client http.Client, url string) *Pinger {
+func NewPinger(client Client, url string) *Pinger {
 	return &Pinger{
 		Count:  defaultPingCount,
 		URL:    url,
