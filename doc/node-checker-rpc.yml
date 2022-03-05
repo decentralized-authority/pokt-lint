@@ -4,7 +4,7 @@ info:
   version: 1.0.0
 servers:
   - url: http://{{baseurl}}
-  - url: https://us-east-1-lint.pokt.tools
+  - url: https://2eqrf8goof.execute-api.us-east-1.amazonaws.com/test
 paths:
   /relay-test:
     post:
@@ -17,7 +17,7 @@ paths:
             schema:
               type: object
               example:
-                node_url: https://node-000.pokt.gaagl.com
+                node_url: https://node-000.ocean1.pokt.tools
                 node_id: dac663ff8b27db0efa78d068ba938925fc412bc5
                 chain_ids:
                   - '0001'
