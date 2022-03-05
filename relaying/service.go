@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/itsnoproblem/pokt-lint/http"
 	"github.com/itsnoproblem/pokt-lint/pocket"
 	"github.com/itsnoproblem/pokt-lint/rpc"
 	"github.com/itsnoproblem/pokt-lint/timer"
-	nethttp "net/http"
 )
 
 type Service interface {
@@ -21,7 +21,7 @@ type nodeChecker struct {
 	nodeChains     []pocket.Chain
 }
 
-func NewNodeChecker(nodeID, nodeAddress string, chains []string, httpClient nethttp.Client) (*nodeChecker, error) {
+func NewNodeChecker(nodeID, nodeAddress string, chains []string, httpClient http.Client) (*nodeChecker, error) {
 	var err error
 	empty := nodeChecker{}
 	chainObjects := make([]pocket.Chain, len(chains))

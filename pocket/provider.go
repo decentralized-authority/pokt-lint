@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net/http"
+	gohttp "net/http"
 	"strconv"
+
+	"github.com/itsnoproblem/pokt-lint/http"
 )
 
 const (
@@ -114,30 +116,33 @@ func (p provider) doRequest(url string, reqObj interface{}) ([]byte, error) {
 	}
 	req := bytes.NewBuffer(reqBody)
 
-	clientReq, err := http.NewRequest(http.MethodPost, url, req)
+	clientReq, err := gohttp.NewRequest(gohttp.MethodPost, url, req)
 	if err != nil {
 		return nil, NewRelayError(500, err)
 	}
 	clientReq.Header.Set("Content-type", contentTypeJSON)
 
 	resp, err := p.client.Do(clientReq)
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
+	body := make([]byte, 0)
+	if resp.Body != nil {
+		defer func(Body io.ReadCloser) {
+			err := Body.Close()
+			if err != nil {
+				log.Default().Printf("error closing response body: %s", err)
+			}
+		}(resp.Body)
 		if err != nil {
-			log.Default().Printf("error closing response body: %s", err)
+			return nil, NewRelayError(500, err)
 		}
-	}(resp.Body)
-	if err != nil {
-		return nil, NewRelayError(500, err)
-	}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, NewRelayError(resp.StatusCode, err)
+		body, err = io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, NewRelayError(resp.StatusCode, err)
+		}
 	}
 
 	log.Default().Printf("Pocket Provider: (%d) %s", resp.StatusCode, url)
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != gohttp.StatusOK {
 		var str string
 		_ = json.Unmarshal(body, &str)
 		return nil, NewRelayError(resp.StatusCode, errors.New(str))
