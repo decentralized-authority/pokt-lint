@@ -25,7 +25,7 @@ lambda-relaytest:
 	cd ${BUILD_DIR} && zip ${LAMBDA_RELAY_TEST_BINARY}.zip ${LAMBDA_RELAY_TEST_BINARY}
 
 test:
-	go test ./...
+	go test -v ./...
 
 clean:
 	go clean

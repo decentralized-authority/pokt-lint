@@ -3,7 +3,6 @@ package pocket
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -23,7 +22,7 @@ const (
 type Provider interface {
 	Height() (uint, error)
 	Servicer(address string) (Node, error)
-	SimulateRelay(req RelayRequest) (map[string]interface{}, error)
+	SimulateRelay(req RelayRequest) (RelayResponse, error)
 }
 
 func NewProvider(c http.Client, pocketRpcURL string) Provider {
@@ -51,7 +50,7 @@ func (p provider) Servicer(address string) (Node, error) {
 	nodeRequest := queryNodeRequest{Address: address}
 	var nodeResponse queryNodeResponse
 
-	body, err := p.doRequest(url, nodeRequest)
+	body, _, err := p.doRequest(url, nodeRequest)
 	if err != nil {
 		return fail(err)
 	}
@@ -87,38 +86,43 @@ func (p provider) Servicer(address string) (Node, error) {
 	}, nil
 }
 
-func (p provider) SimulateRelay(simRequest RelayRequest) (map[string]interface{}, error) {
-	url := fmt.Sprintf("%s/%s", p.pocketRpcURL, urlPathSimulateRelay)
-
-	resp, err := p.doRequest(url, simRequest)
-	if err != nil {
-		return nil, err
-	}
-
-	s, _ := strconv.Unquote(string(resp))
-	m := make(map[string]interface{})
-	err = json.Unmarshal([]byte(s), &m)
-	if err != nil {
-		return nil, err
-	}
-
-	return m, nil
+func bytesToMap(b []byte) map[string]interface{} {
+	thing := make(map[string]interface{})
+	_ = json.Unmarshal(b, &thing)
+	return thing
 }
 
-func (p provider) doRequest(url string, reqObj interface{}) ([]byte, error) {
+func (p provider) SimulateRelay(simRequest RelayRequest) (RelayResponse, error) {
+	url := fmt.Sprintf("%s/%s", p.pocketRpcURL, urlPathSimulateRelay)
+
+	respBody, statusCode, err := p.doRequest(url, simRequest)
+	if err != nil {
+		return RelayResponse{
+			StatusCode: statusCode,
+			Data:       respBody,
+		}, fmt.Errorf("pocketProvider.SimulateRelay: %s", err)
+	}
+
+	return RelayResponse{
+		StatusCode: statusCode,
+		Data:       respBody,
+	}, nil
+}
+
+func (p provider) doRequest(url string, reqObj interface{}) ([]byte, int, error) {
 	var reqBody []byte
 	var err error
 	if reqObj != nil {
 		reqBody, err = json.Marshal(reqObj)
 		if err != nil {
-			return nil, NewRelayError(500, err)
+			return nil, 500, fmt.Errorf("doRequest got error encoding request: %s", err)
 		}
 	}
 	req := bytes.NewBuffer(reqBody)
 
 	clientReq, err := gohttp.NewRequest(gohttp.MethodPost, url, req)
 	if err != nil {
-		return nil, NewRelayError(500, err)
+		return nil, 500, fmt.Errorf("doRequest got error creating request: %s", err)
 	}
 	clientReq.Header.Set("Content-type", contentTypeJSON)
 
@@ -128,25 +132,20 @@ func (p provider) doRequest(url string, reqObj interface{}) ([]byte, error) {
 		defer func(Body io.ReadCloser) {
 			err := Body.Close()
 			if err != nil {
-				log.Default().Printf("error closing response body: %s", err)
+				log.Default().Printf("doRequest got error closing response body: %s", err)
 			}
 		}(resp.Body)
-		if err != nil {
-			return nil, NewRelayError(500, err)
-		}
 
 		body, err = io.ReadAll(resp.Body)
 		if err != nil {
-			return nil, NewRelayError(resp.StatusCode, err)
+			return nil, resp.StatusCode, fmt.Errorf("doRequest got error reading response body: %s", err)
 		}
+
 	}
 
-	log.Default().Printf("Pocket Provider: (%d) %s", resp.StatusCode, url)
-	if resp.StatusCode != gohttp.StatusOK {
-		var str string
-		_ = json.Unmarshal(body, &str)
-		return nil, NewRelayError(resp.StatusCode, errors.New(str))
+	if err != nil {
+		return nil, 500, fmt.Errorf("doRequest: %s", err)
 	}
 
-	return body, nil
+	return body, resp.StatusCode, nil
 }

@@ -54,7 +54,7 @@ func (c *nodeChecker) RunRelayTests() (map[string]RelayTestResult, error) {
 	chains := make(map[string]RelayTestResult, len(c.nodeChains))
 	for _, chain := range c.nodeChains {
 		var success bool
-		msg := make(map[string]interface{})
+		var msg string
 
 		req := pocket.RelayRequest{
 			RelayNetworkID: chain.ID,
@@ -64,26 +64,30 @@ func (c *nodeChecker) RunRelayTests() (map[string]RelayTestResult, error) {
 		t := timer.Start()
 		res, err := c.pocketProvider.SimulateRelay(req)
 		if err != nil {
-			relayErr, ok := err.(pocket.RelayError)
-			if !ok {
-				relayErr = pocket.NewRelayError(500, err)
-			}
-
 			success = false
-			msg = map[string]interface{}{
-				"error": relayErr.Err,
-				"code":  relayErr.Code,
-			}
+			msg = err.Error()
 		} else {
 			success = true
-			msg = res
+			msg = "OK"
 		}
 
+		//payloadB, err := json.Marshal(req.Payload)
+		//if err != nil {
+		//	return nil, fmt.Errorf("RunRelayTests: %s", err)
+		//}
+		//relayResponse, err := json.Marshal(res.Data)
+		//if err != nil {
+		//	return nil, fmt.Errorf("RunRelayTests: %s", err)
+		//}
+
 		chains[chain.ID] = RelayTestResult{
-			ChainID:    chain.ID,
-			Successful: success,
-			Data:       msg,
-			DurationMS: float64(t.Elapsed().Microseconds()) / 1000,
+			ChainID:       chain.ID,
+			Successful:    success,
+			Message:       msg,
+			StatusCode:    res.StatusCode,
+			DurationMS:    float64(t.Elapsed().Microseconds()) / 1000,
+			RelayRequest:  req.Payload,
+			RelayResponse: res,
 		}
 	}
 	return chains, nil

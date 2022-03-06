@@ -1,7 +1,7 @@
 package pocket
 
 import (
-	"fmt"
+	"encoding/json"
 	"github.com/itsnoproblem/pokt-lint/rpc"
 )
 
@@ -10,18 +10,7 @@ type RelayRequest struct {
 	Payload        rpc.Payload `json:"payload"`
 }
 
-type RelayError struct {
-	Code int
-	Err  error
-}
-
-func (r RelayError) Error() string {
-	return fmt.Sprintf("(%d) %s", r.Code, r.Err)
-}
-
-func NewRelayError(code int, err error) RelayError {
-	return RelayError{
-		Code: code,
-		Err:  err,
-	}
+type RelayResponse struct {
+	StatusCode int             `json:"status_code"`
+	Data       json.RawMessage `json:"data"`
 }

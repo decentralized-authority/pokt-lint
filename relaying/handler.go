@@ -3,6 +3,8 @@ package relaying
 import (
 	"context"
 	"fmt"
+	"github.com/itsnoproblem/pokt-lint/pocket"
+	"github.com/itsnoproblem/pokt-lint/rpc"
 	nethttp "net/http"
 	"time"
 )
@@ -18,10 +20,13 @@ type RelayTestRequest struct {
 }
 
 type RelayTestResult struct {
-	ChainID    string                 `json:"chain_id"`
-	Successful bool                   `json:"success"`
-	Data       map[string]interface{} `json:"data"`
-	DurationMS float64                `json:"duration_ms"`
+	ChainID       string               `json:"chain_id"`
+	Successful    bool                 `json:"success"`
+	StatusCode    int                  `json:"status_code"`
+	Message       string               `json:"message"`
+	DurationMS    float64              `json:"duration_ms"`
+	RelayRequest  rpc.Payload          `json:"relay_request"`
+	RelayResponse pocket.RelayResponse `json:"relay_response"`
 }
 
 type RelayTestResponse map[string]RelayTestResult
