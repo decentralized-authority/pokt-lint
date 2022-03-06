@@ -8,6 +8,7 @@ import (
 	"log"
 	gohttp "net/http"
 	"strconv"
+	"strings"
 
 	"github.com/itsnoproblem/pokt-lint/http"
 )
@@ -127,6 +128,10 @@ func (p provider) doRequest(url string, reqObj interface{}) ([]byte, int, error)
 	clientReq.Header.Set("Content-type", contentTypeJSON)
 
 	resp, err := p.client.Do(clientReq)
+	if err != nil {
+		return nil, 500, fmt.Errorf("doRequest: %s", err)
+	}
+
 	body := make([]byte, 0)
 	if resp.Body != nil {
 		defer func(Body io.ReadCloser) {
@@ -143,8 +148,9 @@ func (p provider) doRequest(url string, reqObj interface{}) ([]byte, int, error)
 
 	}
 
-	if err != nil {
-		return nil, 500, fmt.Errorf("doRequest: %s", err)
+	if !strings.Contains(resp.Header.Get("Content-Type"), "application/json") {
+		body = []byte(fmt.Sprintf(`{ "body": "%s" }`, strings.Trim(string(body), "\n")))
+		log.Default().Printf("formatting non json body: %s", body)
 	}
 
 	return body, resp.StatusCode, nil

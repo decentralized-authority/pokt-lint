@@ -28,7 +28,7 @@ func main() {
 	} else {
 		chains = strings.Split(*chainsArg, ",")
 	}
-	
+
 	ctx := context.Background()
 	req := relaying.RelayTestRequest{
 		NodeURL: *nodeURL,
@@ -37,12 +37,14 @@ func main() {
 	}
 	response, err := relaying.HandleRequest(ctx, req)
 	if err != nil {
-		panic(fmt.Sprintf("panic: got error from LambdaRelayTestHandler: %s", err))
+		fmt.Printf("Error from LambdaRelayTestHandler: %s", err)
+		os.Exit(9)
 	}
 
 	output, err := json.Marshal(response)
 	if err != nil {
-		panic(fmt.Sprintf("panic while marshaling respomnse: %s", err))
+		fmt.Printf("Error while marshaling respomnse: %s", err)
+		os.Exit(9)
 	}
 
 	fmt.Printf("%s", output)

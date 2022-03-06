@@ -71,15 +71,6 @@ func (c *nodeChecker) RunRelayTests() (map[string]RelayTestResult, error) {
 			msg = "OK"
 		}
 
-		//payloadB, err := json.Marshal(req.Payload)
-		//if err != nil {
-		//	return nil, fmt.Errorf("RunRelayTests: %s", err)
-		//}
-		//relayResponse, err := json.Marshal(res.Data)
-		//if err != nil {
-		//	return nil, fmt.Errorf("RunRelayTests: %s", err)
-		//}
-
 		chains[chain.ID] = RelayTestResult{
 			ChainID:       chain.ID,
 			Successful:    success,
