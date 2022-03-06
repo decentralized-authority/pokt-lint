@@ -3,7 +3,7 @@ info:
   title: Node Checker API (POKT Lint)
   version: 1.0.0
 servers:
-  - url: http://{{baseurl}}
+  - url: https://{{baseurl}}
   - url: https://2eqrf8goof.execute-api.us-east-1.amazonaws.com/test
 paths:
   /relay-test:
@@ -16,23 +16,87 @@ paths:
           application/json:
             schema:
               type: object
+              required: ["node_url"]
+              properties:
+                node_url:
+                  type: string
+                  description: "The base url of the node to run tests for. Must include protocol and hostname."
+                  example: https://node-000.mynodes.com
+                chains:
+                  type: array
+                  items:
+                    type: string
+                    description: "Array of chain IDs as described in the [official documentation](https://docs.pokt.network/home/resources/references/supported-blockchains). If blank, node_id param is required."
+                    example: ["0001", "0003"]
+                node_id:
+                  type: string
+                  description: The id (address) of the node. Ignored if chains param is set.
+                  example: 4fdb144edcfd0d44be506facxxxxxxxxxxxxxxxx
               example:
                 node_url: https://node-000.ocean1.pokt.tools
-                node_id: dac663ff8b27db0efa78d068ba938925fc412bc5
+                node_id: 4fdb144edcfd0d44be506facxxxxxxxxxxxxxxxx
                 chain_ids:
                   - '0001'
       responses:
         '200':
-          description: Successful response
+          description: Successful response is a map of chain IDs to response data.
           content:
             application/json:
               schema:
                 type: object
+                properties:
+                  "0001":
+                    type: object
+                    properties:
+                      chain_id:
+                        type: string
+                      success:
+                        type: boolean
+                      status_code:
+                        type: integer
+                      message:
+                        type: string
+                      duration_ms:
+                        type: number
+                      relay_request:
+                        type: object
+                        properties:
+                          data:
+                            type: object
+                            description: JSON payload that was sent to the RPC endpoint
+                          method:
+                            type: string
+                            #descriptiom: HTTP method the RPC endpoint was called with
+                          path:
+                            type: string
+                            description: The RPC endpoint path that was called
+                          headers:
+                            type: object
+                            description: a key value pair map of additional headers that were sent in the RPC request
+                      relay_response:
+                        type: object
+                        properties:
+                          status_code:
+                            type: integer
+                            description: the HTTP status code of the relay response
+                          data:
+                            type: object
+                            description: the value of the relay response
                 example:
                   "0001":
                     chain_id: "0001"
                     success: true
+                    status_code: 200
+                    message: "OK"
                     duration_ms: 59.941
+                    relay_request:
+                      data: "{}"
+                      method: "POST"
+                      path: "/v1/query/height"
+                      headers: null
+                    relay_response:
+                      status_code: 200
+                      data: "{\"height\":52844}"
 
 
   /ping-test:
