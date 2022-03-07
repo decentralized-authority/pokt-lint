@@ -1,6 +1,11 @@
 # POKT Lint
 An open-source diagnostic tool for Pocket Network node runners.
 
+- [Using the public API](#using-the-public-api)
+- [Deploying to AWS Lambda](#deploying-to-aws-lambda)
+- [Build the test commands locally](#build-the-test-commands-locally)
+- [Dev tools (Makefile) reference](#dev-toolchain-reference)
+---
 ## Using the public API
 
 The public deployment of this tool is available at the following baseURL:
@@ -88,7 +93,7 @@ Usage of ./build/relaytest:
   -url string
     	node url
 ```
-
+---
 ## Dev Toolchain Reference
 ```
 pokt-lint % make help  
