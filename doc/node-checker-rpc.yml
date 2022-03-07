@@ -21,7 +21,7 @@ paths:
                 node_url:
                   type: string
                   description: "The base url of the node to run tests for. Must include protocol and hostname."
-                  example: https://node-000.mynodes.com
+                  example: https://node-000.pokt.mynodes.com
                 chains:
                   type: array
                   items:
@@ -109,8 +109,12 @@ paths:
           application/json:
             schema:
               type: object
+              properties:
+                node_url:
+                  type: string
+                  description: "the base url of a pocket node. Pings are sent to `{node_url}/v1`"
               example:
-                node_url: https://node-000.pokt.gaagl.com
+                node_url: https://node-000.pokt.mynodes.com
       responses:
         '200':
           description: Successful response
@@ -118,6 +122,17 @@ paths:
             application/json:
               schema:
                 type: object
+                properties:
+                  num_sent:
+                    type: integer
+                  num_ok:
+                    type: integer
+                  min_time_ms:
+                    type: number
+                  max_time_ms:
+                    type: number
+                  avg_time_ms:
+                    type: number
                 example:
                   num_sent: 10
                   num_ok: 10
