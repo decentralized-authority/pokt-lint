@@ -6,7 +6,12 @@ An open-source diagnostic tool for Pocket Network node runners.
 The public deployment of this tool is available at the following baseURL:
 https://2eqrf8goof.execute-api.us-east-1.amazonaws.com/test
 
-### 👉 [Interactive RPC Spec](https://editor.swagger.io/?url=https://raw.githubusercontent.com/itsnoproblem/pokt-lint/master/doc/node-checker-rpc.yml)
+### 👉 [Interactive OpenAPI Spec](https://editor.swagger.io/?url=https://raw.githubusercontent.com/itsnoproblem/pokt-lint/master/doc/node-checker-rpc.yml)
+
+### Run the OpenAPI docs locally
+```bash
+make docserver
+```
 
 ---
 
@@ -84,3 +89,20 @@ Usage of ./build/relaytest:
     	node url
 ```
 
+## Dev Toolchain Reference
+```
+pokt-lint % make help  
+usage: make [target] ...
+
+targets:
+-------
+help                  Show this help message.
+docserver             Run an interactive OpenAPI spec on port 3333
+docserver-stop        Stop the interactive spec
+build-commands        compiles executables to ${BUILD_DIR}
+build-lambda          builds lambda function bundles in ${BUILD_DIR}
+lambda-pingtest       builds the pingtest lambda function
+lambda-relaytest      builds the relaytest lambda function
+test                  runs the unit tests
+clean                 deletes build artifacts
+```

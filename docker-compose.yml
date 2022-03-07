@@ -1,0 +1,12 @@
+version: "3.3"
+
+services:
+  docs:
+    image: swaggerapi/swagger-ui:v4.6.1
+    container_name: "node-checker-docs"
+    ports:
+      - "3333:8080"
+    volumes:
+      - ./doc/node-checker-rpc.yml:/api.yaml
+    environment:
+      SWAGGER_JSON: /api.yaml

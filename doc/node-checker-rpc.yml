@@ -3,8 +3,8 @@ info:
   title: Node Checker API (POKT Lint)
   version: 1.0.0
 servers:
-  - url: https://{{baseurl}}
   - url: https://2eqrf8goof.execute-api.us-east-1.amazonaws.com/test
+  - url: https://2eqrf8goof.execute-api.us-east-1.amazonaws.com/prod
 paths:
   /relay-test:
     post:
