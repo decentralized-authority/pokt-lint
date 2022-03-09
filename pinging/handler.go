@@ -10,14 +10,14 @@ import (
 
 const (
 	httpClientTimeoutSec = 20
+	maxNumPings          = 30
 )
 
 type PingTestRequest struct {
-	NodeURL string `json:"node_url"`
+	NodeURL   string `json:"node_url"`
+	PingCount int64  `json:"num_pings"`
 }
 
-type logger struct {
-}
 type PingTestResponse *http.PingStats
 
 func HandleRequest(ctx context.Context, req PingTestRequest) (PingTestResponse, error) {
@@ -29,6 +29,14 @@ func HandleRequest(ctx context.Context, req PingTestRequest) (PingTestResponse, 
 	pingSvc, err := NewService(&httpClient, url)
 	if err != nil {
 		return nil, fmt.Errorf("pinging.HandleRequest: %s", err)
+	}
+
+	if req.PingCount > maxNumPings {
+		return nil, fmt.Errorf("num_pings cannot be greater than %d", maxNumPings)
+	}
+
+	if req.PingCount > 0 {
+		pingSvc.SetNumPings(ctx, req.PingCount)
 	}
 
 	stats, err := pingSvc.PingHost(ctx)
