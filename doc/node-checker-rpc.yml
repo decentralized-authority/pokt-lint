@@ -109,12 +109,18 @@ paths:
           application/json:
             schema:
               type: object
+              required: ["node_url"]
               properties:
                 node_url:
                   type: string
                   description: "the base url of a pocket node. Pings are sent to `{node_url}/v1`"
+                num_pings:
+                  type: integer
+                  description: "(optional) the number of pings to send. Max is 30, default is 10."
               example:
                 node_url: https://node-000.pokt.mynodes.com
+                num_pings: 25
+
       responses:
         '200':
           description: Successful response
