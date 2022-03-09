@@ -3,9 +3,11 @@ $(V).SILENT:
 BUILD_DIR=./build
 LAMBDA_PING_TEST_BINARY=LambdaPingTestHandler
 LAMBDA_RELAY_TEST_BINARY=LambdaRelayTestHandler
+LAMBDA_CORS_BINARY=LambdaCORSHandler
 PING_TEST_BINARY=pingtest
 RELAY_TEST_BINARY=relaytest
 LAMBDA_PING_TEST_TARGET=./cmd/LambdaPingTestHandler
+LAMBDA_CORS_TARGET=./cmd/LambdaCORSHandler
 LAMBDA_RELAY_TEST_TARGET=./cmd/LambdaRelayTestHandler
 PING_TEST_TARGET=./cmd/pingtest
 RELAY_TEST_TARGET=./cmd/relaytest
@@ -31,6 +33,7 @@ build-commands: ## compiles executables to ${BUILD_DIR}
 build-lambda: ## builds lambda function bundles in ${BUILD_DIR}
 	make lambda-pingtest
 	make lambda-relaytest
+	make lambda-cors
 
 lambda-pingtest: ## builds the pingtest lambda function
 	GOOS=linux go build -o ${BUILD_DIR}/${LAMBDA_PING_TEST_BINARY} ${LAMBDA_PING_TEST_TARGET}
@@ -40,9 +43,14 @@ lambda-relaytest: ## builds the relaytest lambda function
 	GOOS=linux go build -o ${BUILD_DIR}/${LAMBDA_RELAY_TEST_BINARY} ${LAMBDA_RELAY_TEST_TARGET}
 	cd ${BUILD_DIR} && zip ${LAMBDA_RELAY_TEST_BINARY}.zip ${LAMBDA_RELAY_TEST_BINARY}
 
+lambda-cors: ## builds the cors handler (to return access-control-* headers)
+	GOOS=linux go build -o ${BUILD_DIR}/${LAMBDA_CORS_BINARY} ${LAMBDA_CORS_TARGET}
+	cd ${BUILD_DIR} && zip ${LAMBDA_CORS_BINARY}.zip ${LAMBDA_CORS_BINARY}
+
 test: ## runs the unit tests
 	go test -v ./...
 
 clean: ## deletes build artifacts
 	go clean
 	rm -f ${LAMBDA_PING_TEST_BINARY} ${LAMBDA_RELAY_TEST_BINARY} ${PING_TEST_BINARY} ${RELAY_TEST_BINARY} ${LAMBDA_PING_TEST_BINARY}.zip ${LAMBDA_RELAY_TEST_BINARY}.zip
+	rm -f ${BUILD_DIR}/${LAMBDA_CORS_BINARY} ${BUILD_DIR}/${LAMBDA_CORS_BINARY}.zip 
