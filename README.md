@@ -8,8 +8,9 @@ An open-source diagnostic tool for Pocket Network node runners.
 ---
 ## Using the public API
 
-The public deployment of this tool is available at the following baseURL:
-https://2eqrf8goof.execute-api.us-east-1.amazonaws.com/test
+The public deployment of this tool is available at the following baseURLs:
+- staging: https://2eqrf8goof.execute-api.us-east-1.amazonaws.com/test
+- production: https://2eqrf8goof.execute-api.us-east-1.amazonaws.com/prod
 
 ### 👉 [Interactive OpenAPI Spec](https://editor.swagger.io/?url=https://raw.githubusercontent.com/itsnoproblem/pokt-lint/master/doc/node-checker-rpc.yml)
 
