@@ -13,12 +13,14 @@ const (
 	httpClientTimeoutSec = 20
 )
 
+// RelayTestRequest represents the request format the relaying service accepts
 type RelayTestRequest struct {
 	NodeURL string   `json:"node_url"`
 	NodeID  string   `json:"node_id"`
 	Chains  []string `json:"chain_ids"`
 }
 
+// RelayTestResult represents the result of a relay test
 type RelayTestResult struct {
 	ChainID       string               `json:"chain_id"`
 	Successful    bool                 `json:"success"`
@@ -29,8 +31,10 @@ type RelayTestResult struct {
 	RelayResponse pocket.RelayResponse `json:"relay_response"`
 }
 
+// RelayTestResponse is a map of chain ID to RelayTestResult
 type RelayTestResponse map[string]RelayTestResult
 
+// HandleRequest handles a relaying service request
 func HandleRequest(ctx context.Context, req RelayTestRequest) (RelayTestResponse, error) {
 	httpClient := nethttp.Client{
 		Timeout: httpClientTimeoutSec * time.Second,
@@ -40,7 +44,7 @@ func HandleRequest(ctx context.Context, req RelayTestRequest) (RelayTestResponse
 		return RelayTestResponse{}, fmt.Errorf("relaying.HandleRequest: %s", err)
 	}
 
-	relayRes, err := linter.RunRelayTests()
+	relayRes, err := linter.RunRelayTests(ctx)
 	if err != nil {
 		return RelayTestResponse{}, fmt.Errorf("relaying.HandleRequest: %s", err)
 	}

@@ -16,26 +16,27 @@ import (
 const (
 	contentTypeJSON      = "application/json; charset=UTF-8"
 	urlPathGetNode       = "v1/query/node"
-	urlPathGetHeight     = "v1/query/height"
 	urlPathSimulateRelay = "v1/client/sim"
 )
 
+// Provider is a pocket network client
 type Provider interface {
 	Height() (uint, error)
 	Servicer(address string) (Node, error)
 	SimulateRelay(req RelayRequest) (RelayResponse, error)
 }
 
-func NewProvider(c http.Client, pocketRpcURL string) Provider {
+// NewProvider returns a new pocket provider
+func NewProvider(c http.Client, pocketURL string) Provider {
 	return provider{
-		client:       c,
-		pocketRpcURL: pocketRpcURL,
+		client:    c,
+		pocketURL: pocketURL,
 	}
 }
 
 type provider struct {
-	client       http.Client
-	pocketRpcURL string
+	client    http.Client
+	pocketURL string
 }
 
 func (p provider) Height() (uint, error) {
@@ -44,10 +45,10 @@ func (p provider) Height() (uint, error) {
 
 func (p provider) Servicer(address string) (Node, error) {
 	var fail = func(err error) (Node, error) {
-		return Node{}, fmt.Errorf("Services: %s", err)
+		return Node{}, fmt.Errorf("provider.Servicer: %s", err)
 	}
 
-	url := fmt.Sprintf("%s/%s", p.pocketRpcURL, urlPathGetNode)
+	url := fmt.Sprintf("%s/%s", p.pocketURL, urlPathGetNode)
 	nodeRequest := queryNodeRequest{Address: address}
 	var nodeResponse queryNodeResponse
 
@@ -87,14 +88,8 @@ func (p provider) Servicer(address string) (Node, error) {
 	}, nil
 }
 
-func bytesToMap(b []byte) map[string]interface{} {
-	thing := make(map[string]interface{})
-	_ = json.Unmarshal(b, &thing)
-	return thing
-}
-
 func (p provider) SimulateRelay(simRequest RelayRequest) (RelayResponse, error) {
-	url := fmt.Sprintf("%s/%s", p.pocketRpcURL, urlPathSimulateRelay)
+	url := fmt.Sprintf("%s/%s", p.pocketURL, urlPathSimulateRelay)
 
 	respBody, statusCode, err := p.doRequest(url, simRequest)
 	if err != nil {

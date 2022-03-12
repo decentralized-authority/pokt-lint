@@ -11,6 +11,7 @@ const (
 	pingDelayMS      = 500
 )
 
+// Pinger is a ping client capable of returning PingStats
 type Pinger struct {
 	Count  int64
 	URL    string
@@ -18,6 +19,7 @@ type Pinger struct {
 	client Client
 }
 
+// PingStats are the measured timing and outcome of a ping test
 type PingStats struct {
 	NumSent   int64   `json:"num_sent"`
 	NumOk     int64   `json:"num_ok"`
@@ -26,6 +28,7 @@ type PingStats struct {
 	AvgTimeMS float64 `json:"avg_time_ms"`
 }
 
+// NewPinger returns a new Pinger for the specified url
 func NewPinger(client Client, url string) *Pinger {
 	return &Pinger{
 		Count:  defaultPingCount,
@@ -34,6 +37,7 @@ func NewPinger(client Client, url string) *Pinger {
 	}
 }
 
+// Run executes the ping tests
 func (p *Pinger) Run() (*PingStats, error) {
 	var total, min, max time.Duration
 	success := int64(0)
@@ -75,6 +79,7 @@ func (p *Pinger) Run() (*PingStats, error) {
 	return p.stats, nil
 }
 
+// Statistics returns a reference to the PingStats from the pinger's most recent run.  If it hasn't run yet, the return value will be nil
 func (p *Pinger) Statistics() *PingStats {
 	return p.stats
 }

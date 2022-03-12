@@ -1,31 +1,35 @@
 package mock
 
 import (
+	"github.com/itsnoproblem/pokt-lint/http"
 	gohttp "net/http"
 )
 
-type fakeHttpClient struct {
+type fakeHTTPClient struct {
 	returnSuccessResponses bool
 }
 
-func NewFakeHTTPClient(successResponses bool) fakeHttpClient {
-	return fakeHttpClient{returnSuccessResponses: successResponses}
+// NewFakeHTTPClient returns a mock HTTP client
+func NewFakeHTTPClient(successResponses bool) http.Client {
+	return fakeHTTPClient{returnSuccessResponses: successResponses}
 }
 
-func (c fakeHttpClient) ReturnSuccessResponses(newValue bool) fakeHttpClient {
+// ReturnSuccessResponses determines the type of responses the client returns.
+// 200 OK if *true*, 500 Internal Server Error if *false*.
+func (c fakeHTTPClient) ReturnSuccessResponses(newValue bool) http.Client {
 	c.returnSuccessResponses = newValue
 	return c
 }
 
-func (c fakeHttpClient) Do(req *gohttp.Request) (*gohttp.Response, error) {
+func (c fakeHTTPClient) Do(req *gohttp.Request) (*gohttp.Response, error) {
 	return c.fakeResponse()
 }
 
-func (c fakeHttpClient) Get(url string) (*gohttp.Response, error) {
+func (c fakeHTTPClient) Get(url string) (*gohttp.Response, error) {
 	return c.fakeResponse()
 }
 
-func (c fakeHttpClient) fakeResponse() (*gohttp.Response, error) {
+func (c fakeHTTPClient) fakeResponse() (*gohttp.Response, error) {
 	var statusCode int
 	var status string
 	if c.returnSuccessResponses {

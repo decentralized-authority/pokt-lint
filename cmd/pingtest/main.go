@@ -5,10 +5,13 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/itsnoproblem/pokt-lint/pinging"
-	"net/http"
+	"log"
+	gohttp "net/http"
 	"os"
 	"time"
+
+	"github.com/itsnoproblem/pokt-lint/http"
+	"github.com/itsnoproblem/pokt-lint/pinging"
 )
 
 const pingTimeoutMS = 1500
@@ -23,12 +26,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	c := http.Client{
+	logger := log.Default()
+	c := gohttp.Client{
 		Timeout: pingTimeoutMS * time.Millisecond,
 	}
+	client := http.NewClientWithLogger(&c, logger)
 
 	ctx := context.Background()
-	svc, err := pinging.NewService(&c, *nodeURL)
+	svc, err := pinging.NewService(client, *nodeURL)
 	svc.SetNumPings(ctx, *numPings)
 	if err != nil {
 		panic(err)
