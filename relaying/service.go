@@ -83,6 +83,7 @@ func NewNodeChecker(nodeID, nodeAddress string, chains []string, httpClient http
 
 	for i, c := range chains {
 		if chainObjects[i], err = pocket.ChainFromID(c); err != nil {
+			return nodeChecker{}, fmt.Errorf("relaying.NewNodeChecker: %s", err)
 		}
 	}
 

@@ -45,7 +45,7 @@ func (p provider) Height() (uint, error) {
 
 func (p provider) Servicer(address string) (Node, error) {
 	var fail = func(err error) (Node, error) {
-		return Node{}, fmt.Errorf("Services: %s", err)
+		return Node{}, fmt.Errorf("provider.Servicer: %s", err)
 	}
 
 	url := fmt.Sprintf("%s/%s", p.pocketURL, urlPathGetNode)

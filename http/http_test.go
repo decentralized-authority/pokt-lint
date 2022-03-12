@@ -3,14 +3,8 @@ package http_test
 import (
 	"github.com/itsnoproblem/pokt-lint/http"
 	"github.com/itsnoproblem/pokt-lint/mock"
-	gohttp "net/http"
 	"testing"
 )
-
-type client interface {
-	Do(req *gohttp.Request) (*gohttp.Response, error)
-	Get(url string) (gohttp.Response, error)
-}
 
 func TestPinger_RunSuccess(t *testing.T) {
 	url := "https://node-000.mynode.com"

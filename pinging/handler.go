@@ -44,5 +44,9 @@ func HandleRequest(ctx context.Context, req PingTestRequest) (PingTestResponse, 
 	}
 
 	stats, err := pingSvc.PingHost(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("HandleRequest: %s", err)
+	}
+
 	return stats, nil
 }
