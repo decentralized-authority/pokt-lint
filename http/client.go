@@ -2,55 +2,59 @@ package http
 
 import (
 	"fmt"
-	"github.com/go-kit/kit/log"
-	"github.com/itsnoproblem/pokt-lint/timer"
+	"log"
 	"net/http"
+	"time"
+
+	"github.com/itsnoproblem/pokt-lint/timer"
 )
 
+// Client is an HTTP client.
 type Client interface {
 	Do(req *http.Request) (*http.Response, error)
 	Get(url string) (*http.Response, error)
 }
 
-func NewClientWithLogger(c Client, l log.Logger) Client {
-	return &ClientWithLogger{
+// NewClientWithLogger returns a client that writes log messages
+func NewClientWithLogger(c Client, l *log.Logger) Client {
+	return &clientWithLogger{
 		client: c,
-		logger: l,
+		logger: *l,
 	}
 }
 
-type ClientWithLogger struct {
+type clientWithLogger struct {
 	client Client
 	logger log.Logger
 }
 
-func (c *ClientWithLogger) Do(req *http.Request) (*http.Response, error) {
+func (c *clientWithLogger) Do(req *http.Request) (*http.Response, error) {
 	t := timer.Start()
 	resp, err := c.client.Do(req)
 	if err != nil {
-		c.logError("ClientWithLogger.Do", err)
+		c.logError("clientWithLogger.Do", err)
 		return resp, err
 	}
 
-	_ = c.logger.Log("type", "INFO", "url", req.URL.String(), "took", t.Elapsed().String())
+	c.logInfo(fmt.Sprintf("%s - took %s", req.URL.String(), t.Elapsed().String()))
 	return resp, nil
 }
 
-func (c *ClientWithLogger) Get(url string) (*http.Response, error) {
+func (c *clientWithLogger) Get(url string) (*http.Response, error) {
 	t := timer.Start()
 	resp, err := c.client.Get(url)
 	if err != nil {
-		c.logError("ClientWithLogger.Get", err)
+		c.logError("clientWithLogger.Get", err)
 		return resp, err
 	}
-	_ = c.logger.Log("type", "INFO", "url", url, "took", t.Elapsed().String())
+	c.logInfo(fmt.Sprintf("%s: %s", url, t.Elapsed().String()))
 	return resp, nil
 }
 
-func (c *ClientWithLogger) Log(args ...interface{}) error {
-	return c.logger.Log(args)
+func (c *clientWithLogger) logError(msg string, err error) {
+	c.logger.Printf("ERROR - %s - %s: %s", time.Now().String(), msg, err.Error())
 }
 
-func (c *ClientWithLogger) logError(msg string, err error) {
-	_ = c.Log("type", "ERROR", "loc", log.Caller(2), "error", fmt.Errorf("%s: %s", msg, err))
+func (c *clientWithLogger) logInfo(msg string) {
+	c.logger.Printf("INFO - %s - %s", time.Now().String(), msg)
 }

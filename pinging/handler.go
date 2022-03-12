@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/itsnoproblem/pokt-lint/http"
+	"log"
 	nethttp "net/http"
 	"time"
 )
@@ -13,20 +14,23 @@ const (
 	maxNumPings          = 30
 )
 
+// PingTestRequest represents the request object for ping tests
 type PingTestRequest struct {
 	NodeURL   string `json:"node_url"`
 	PingCount int64  `json:"num_pings"`
 }
 
+// PingTestResponse represent the statistics measured by the ping test
 type PingTestResponse *http.PingStats
 
+// HandleRequest handles a pinging service request
 func HandleRequest(ctx context.Context, req PingTestRequest) (PingTestResponse, error) {
 	httpClient := nethttp.Client{
 		Timeout: httpClientTimeoutSec * time.Second,
 	}
-
+	client := http.NewClientWithLogger(&httpClient, log.Default())
 	url := fmt.Sprintf("%s/v1", req.NodeURL)
-	pingSvc, err := NewService(&httpClient, url)
+	pingSvc, err := NewService(client, url)
 	if err != nil {
 		return nil, fmt.Errorf("pinging.HandleRequest: %s", err)
 	}

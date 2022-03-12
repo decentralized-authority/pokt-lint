@@ -6,11 +6,13 @@ import (
 	"github.com/itsnoproblem/pokt-lint/http"
 )
 
+// Service - pinging service performs ping tests
 type Service interface {
 	PingHost(ctx context.Context) (*http.PingStats, error)
 	SetNumPings(ctx context.Context, num int64)
 }
 
+// NewService returns a new pinging service
 func NewService(client http.Client, url string) (Service, error) {
 	pinger := http.NewPinger(client, url)
 	return &service{pinger: pinger}, nil
