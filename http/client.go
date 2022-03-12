@@ -19,13 +19,13 @@ type Client interface {
 func NewClientWithLogger(c Client, l *log.Logger) Client {
 	return &clientWithLogger{
 		client: c,
-		logger: *l,
+		logger: l,
 	}
 }
 
 type clientWithLogger struct {
 	client Client
-	logger log.Logger
+	logger *log.Logger
 }
 
 func (c *clientWithLogger) Do(req *http.Request) (*http.Response, error) {
