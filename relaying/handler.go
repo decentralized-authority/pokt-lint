@@ -44,7 +44,7 @@ func HandleRequest(ctx context.Context, req RelayTestRequest) (RelayTestResponse
 		return RelayTestResponse{}, fmt.Errorf("relaying.HandleRequest: %s", err)
 	}
 
-	relayRes, err := linter.RunRelayTests()
+	relayRes, err := linter.RunRelayTests(ctx)
 	if err != nil {
 		return RelayTestResponse{}, fmt.Errorf("relaying.HandleRequest: %s", err)
 	}
