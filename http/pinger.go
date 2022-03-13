@@ -29,6 +29,7 @@ type PingStats struct {
 	Results   []PingResponse `json:"results"`
 }
 
+// PingResponse represents a response to an individual ping request
 type PingResponse struct {
 	DurationMS float64 `json:"duration_ms"`
 	StatusCode int     `json:"status_code"`
