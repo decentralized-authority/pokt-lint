@@ -48,6 +48,7 @@ func (c nodeChecker) RunRelayTests(_ context.Context) (map[string]RelayTestResul
 
 		chains[chain.ID] = RelayTestResult{
 			ChainID:       chain.ID,
+			ChainName:     chain.Name,
 			Successful:    success,
 			Message:       msg,
 			StatusCode:    res.StatusCode,
