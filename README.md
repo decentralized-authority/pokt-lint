@@ -1,3 +1,7 @@
+![Unit Tests](https://github.com/decentralized-authority/pokt-lint/actions/workflows/go.yml/badge.svg)
+&nbsp;
+[![Go Report Card](https://goreportcard.com/badge/github.com/decentralized-authority/pokt-lint)](https://goreportcard.com/report/github.com/decentralized-authority/pokt-lint)
+
 # POKT Lint
 An open-source diagnostic tool for Pocket Network node runners.
 
@@ -46,9 +50,9 @@ This uses the aws-cli docker container and expects `~/.aws/config` and `~/.aws/c
 ---
 
 ## Build the test commands locally
-This package provides 2 commands that can be used to test the operation of Pocket Network nodes: 
+This package provides 2 commands that can be used to test the operation of Pocket Network nodes:
 - `pingtest` measures the latency between the test client and a node
-- `relaytest` runs relay tests on a node 
+- `relaytest` runs relay tests on a node
 
 The commands can be built and run directly on your host, or they can be built and run in a docker container.
 
@@ -130,3 +134,4 @@ deploy-lambda-cors              builds and deploys the CORS function
 test                            runs the unit tests
 clean                           deletes build artifacts
 ```
+

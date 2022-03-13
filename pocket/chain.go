@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// Chain represents a pocket network chain as defined by https://docs.pokt.network/home/resources/references/supported-blockchains
 type Chain struct {
 	ID   string
 	Name string
@@ -26,6 +27,7 @@ var allChains = map[string]string{
 	"0040": "HMY 0",
 	"0044": "IoTeX",
 	"0001": "POKT",
+	"0002": "POKT testnet",
 	"0009": "Polygon",
 	"000B": "Polygon Archival",
 	"000F": "Polygon Mumbai",
@@ -34,6 +36,7 @@ var allChains = map[string]string{
 	"000C": "xDAI Archival",
 }
 
+// ChainFromID returns the chain for a given ID, or an error if not found
 func ChainFromID(id string) (Chain, error) {
 	name, ok := allChains[id]
 	if !ok {

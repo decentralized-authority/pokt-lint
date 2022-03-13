@@ -1,6 +1,7 @@
 package relaying_test
 
 import (
+	"context"
 	"github.com/itsnoproblem/pokt-lint/mock"
 	"github.com/itsnoproblem/pokt-lint/relaying"
 	"testing"
@@ -17,7 +18,7 @@ func TestNodeChecker_RunRelayTests(t *testing.T) {
 		t.Fatalf("got error instantiating node checker: %s", err)
 	}
 
-	_, err = svc.RunRelayTests()
+	_, err = svc.RunRelayTests(context.Background())
 	if err != nil {
 		t.Fatalf("got error running relay tests: %s", err)
 	}
