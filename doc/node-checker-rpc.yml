@@ -50,6 +50,8 @@ paths:
                     properties:
                       chain_id:
                         type: string
+                      chain_name:
+                        type: string
                       success:
                         type: boolean
                       status_code:
@@ -85,18 +87,22 @@ paths:
                 example:
                   "0001":
                     chain_id: "0001"
+                    chain_name: "POKT mainnet"
                     success: true
                     status_code: 200
                     message: "OK"
                     duration_ms: 59.941
                     relay_request:
-                      data: "{}"
+                      data: {}
                       method: "POST"
                       path: "/v1/query/height"
                       headers: null
                     relay_response:
                       status_code: 200
-                      data: "{\"height\":52844}"
+                      data: {
+                        height: 52844
+
+                      }
 
 
   /ping-test:
@@ -139,9 +145,28 @@ paths:
                     type: number
                   avg_time_ms:
                     type: number
+                  results:
+                    type: array
+                    items:
+                      type: object
                 example:
-                  num_sent: 10
-                  num_ok: 10
-                  min_time_ms: 37.058
-                  max_time_ms: 97.027
-                  avg_time_ms: 44.948
+                  num_sent: 3
+                  num_ok: 3
+                  min_time_ms: 14.228
+                  max_time_ms: 69.566
+                  avg_time_ms: 32.77
+                  "results": [
+                    {
+                      "duration_ms": 69.566,
+                      "status_code": 200
+                    },
+                    {
+                      "duration_ms": 14.518,
+                      "status_code": 200
+                    },
+                    {
+                      "duration_ms": 14.228,
+                      "status_code": 200
+                    }
+                  ]
+                    
