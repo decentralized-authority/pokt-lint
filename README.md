@@ -27,7 +27,7 @@ make docserver
 
 ## Deploying to AWS Lambda
 
-Build the tests as AWS Lambda functions. A public deployment is maintained on AWS.  To build executables that can be uploaded to
+A public deployment is maintained on AWS. To build executables that can be uploaded to
 AWS Lambda, run the following command:
 ```
 make build-lambda
@@ -37,6 +37,15 @@ This will create 2 archives that can be uploaded to their corresponding
 Lambda functions:
 - `build/LambdaPingTestHandler.zip`
 - `build/LambdaRelayTestHandler.zip`
+
+You can also build *and* deploy to AWS using the aws-cli:
+```
+make deploy-lambda-all-qa 
+# or
+make deploy-lambda-all
+```
+This uses the aws-cli docker container and expects `~/.aws/config` and `~/.aws/credentials` to exist. 
+
 
 ---
 
@@ -101,19 +110,28 @@ Usage of ./build/relaytest:
 ---
 ## Dev Toolchain Reference
 ```
-pokt-lint % make help  
+pokt-lint % make
 usage: make [target] ...
 
 targets:
 -------
-help                  Show this help message.
-docserver             Run an interactive OpenAPI spec on port 3333
-docserver-stop        Stop the interactive spec
-build-commands        compiles executables to ${BUILD_DIR}
-build-lambda          builds lambda function bundles in ${BUILD_DIR}
-lambda-pingtest       builds the pingtest lambda function
-lambda-relaytest      builds the relaytest lambda function
-test                  runs the unit tests
-clean                 deletes build artifacts
+help                            Show this help message.
+docserver                       Run an interactive OpenAPI spec on port 3333
+docserver-stop                  Stop the interactive spec
+build-commands                  <-- compiles executables to ${BUILD_DIR}
+build-lambda                    <-- builds lambda function bundles in ${BUILD_DIR}
+build-lambda-pingtest           builds the pingtest lambda function
+build-lambda-relaytest          builds the relaytest lambda function
+build-lambda-cors               builds the cors handler (to return access-control-* headers)
+deploy-lambda-all-qa            <-- deploys all lambda QA functions
+deploy-lambda-all               <-- deploys all lambda functions
+deploy-lambda-pingtest-qa       builds and deploys the pingtest QA function
+deploy-lambda-relaytest-qa      builds and deploys the relaytest QA function
+deploy-lambda-cors-qa           builds and deploys the CORS QA function
+deploy-lambda-pingtest          builds and deploys the pingtest function
+deploy-lambda-relaytest         builds and deploys the relaytest function
+deploy-lambda-cors              builds and deploys the CORS function
+test                            runs the unit tests
+clean                           deletes build artifacts
 ```
 
