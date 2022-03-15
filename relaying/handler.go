@@ -23,6 +23,7 @@ type RelayTestRequest struct {
 // RelayTestResult represents the result of a relay test
 type RelayTestResult struct {
 	ChainID       string               `json:"chain_id"`
+	ChainName     string               `json:"chain_name"`
 	Successful    bool                 `json:"success"`
 	StatusCode    int                  `json:"status_code"`
 	Message       string               `json:"message"`
