@@ -15,6 +15,11 @@ type Service interface {
 	RunRelayTests(ctx context.Context, numSamples int64) (map[string]RelayTestResult, error)
 }
 
+type errResponse struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
 type nodeChecker struct {
 	pocketProvider pocket.Provider
 	nodeID         string
@@ -39,11 +44,6 @@ func (c nodeChecker) RunRelayTests(_ context.Context, numSamples int64) (map[str
 			ChainName:      chain.Name,
 			RelayRequest:   req.Payload,
 			RelayResponses: make([]RelayTestSample, numSamples),
-			//Successful:    success,
-			//Message:       msg,
-			//StatusCode:    res.StatusCode,
-			//DurationMS:    float64(t.Elapsed().Microseconds()) / 1000,
-			//RelayResponse: res,
 		}
 
 		totalExecTime := int64(0)
@@ -51,20 +51,18 @@ func (c nodeChecker) RunRelayTests(_ context.Context, numSamples int64) (map[str
 			t := timer.Start()
 			res, err := c.pocketProvider.SimulateRelay(req)
 			result.StatusCode = res.StatusCode
+
 			if err != nil {
 				result.Successful = false
 				result.Message = err.Error()
-			} else if res.StatusCode != 200 {
-				type errResponse struct {
-					Code    int    `json:"code"`
-					Message string `json:"message"`
-				}
 
+			} else if res.StatusCode != 200 {
 				var relayErr errResponse
 				_ = json.Unmarshal(res.Data, &relayErr)
 				result.Successful = false
 				result.Message = relayErr.Message
 				result.StatusCode = relayErr.Code
+
 			} else {
 				result.Successful = true
 				result.Message = "OK"
@@ -78,6 +76,7 @@ func (c nodeChecker) RunRelayTests(_ context.Context, numSamples int64) (map[str
 					Data:       res.Data,
 				},
 			}
+
 			totalExecTime += duration
 		}
 
