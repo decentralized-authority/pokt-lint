@@ -2,6 +2,7 @@ package relaying
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/itsnoproblem/pokt-lint/http"
 	"github.com/itsnoproblem/pokt-lint/pocket"
@@ -11,7 +12,7 @@ import (
 
 // Service represents a relaying service
 type Service interface {
-	RunRelayTests(ctx context.Context) (map[string]RelayTestResult, error)
+	RunRelayTests(ctx context.Context, numSamples int64) (map[string]RelayTestResult, error)
 }
 
 type nodeChecker struct {
@@ -21,41 +22,67 @@ type nodeChecker struct {
 	nodeChains     []pocket.Chain
 }
 
-func (c nodeChecker) RunRelayTests(_ context.Context) (map[string]RelayTestResult, error) {
+func (c nodeChecker) RunRelayTests(_ context.Context, numSamples int64) (map[string]RelayTestResult, error) {
 	if len(c.nodeChains) < 1 {
 		return nil, fmt.Errorf("no chains for node %s", c.nodeID)
 	}
 
 	chains := make(map[string]RelayTestResult, len(c.nodeChains))
 	for _, chain := range c.nodeChains {
-		var success bool
-		var msg string
-
 		req := pocket.RelayRequest{
 			RelayNetworkID: chain.ID,
 			Payload:        rpc.NewPayload(chain.ID),
 		}
 
-		t := timer.Start()
-		res, err := c.pocketProvider.SimulateRelay(req)
-		if err != nil {
-			success = false
-			msg = err.Error()
-		} else {
-			success = true
-			msg = "OK"
+		result := RelayTestResult{
+			ChainID:        chain.ID,
+			ChainName:      chain.Name,
+			RelayRequest:   req.Payload,
+			RelayResponses: make([]RelayTestSample, numSamples),
+			//Successful:    success,
+			//Message:       msg,
+			//StatusCode:    res.StatusCode,
+			//DurationMS:    float64(t.Elapsed().Microseconds()) / 1000,
+			//RelayResponse: res,
 		}
 
-		chains[chain.ID] = RelayTestResult{
-			ChainID:       chain.ID,
-			ChainName:     chain.Name,
-			Successful:    success,
-			Message:       msg,
-			StatusCode:    res.StatusCode,
-			DurationMS:    float64(t.Elapsed().Microseconds()) / 1000,
-			RelayRequest:  req.Payload,
-			RelayResponse: res,
+		totalExecTime := int64(0)
+		for i := int64(0); i < numSamples; i++ {
+			t := timer.Start()
+			res, err := c.pocketProvider.SimulateRelay(req)
+			result.StatusCode = res.StatusCode
+			if err != nil {
+				result.Successful = false
+				result.Message = err.Error()
+			} else if res.StatusCode != 200 {
+				type errResponse struct {
+					Code    int    `json:"code"`
+					Message string `json:"message"`
+				}
+
+				var relayErr errResponse
+				_ = json.Unmarshal(res.Data, &relayErr)
+				result.Successful = false
+				result.Message = relayErr.Message
+				result.StatusCode = relayErr.Code
+			} else {
+				result.Successful = true
+				result.Message = "OK"
+			}
+
+			duration := t.Elapsed().Microseconds()
+			result.RelayResponses[i] = RelayTestSample{
+				DurationMS: float64(duration) / 1000,
+				RelayResponse: pocket.RelayResponse{
+					StatusCode: res.StatusCode,
+					Data:       res.Data,
+				},
+			}
+			totalExecTime += duration
 		}
+
+		result.DurationMS = float64(totalExecTime/numSamples) / 1000
+		chains[chain.ID] = result
 	}
 	return chains, nil
 }

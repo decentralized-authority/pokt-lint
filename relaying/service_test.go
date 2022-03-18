@@ -18,7 +18,7 @@ func TestNodeChecker_RunRelayTests(t *testing.T) {
 		t.Fatalf("got error instantiating node checker: %s", err)
 	}
 
-	_, err = svc.RunRelayTests(context.Background())
+	_, err = svc.RunRelayTests(context.Background(), 5)
 	if err != nil {
 		t.Fatalf("got error running relay tests: %s", err)
 	}
