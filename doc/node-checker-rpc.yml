@@ -80,6 +80,9 @@ paths:
                         items:
                           type: object
                           properties:
+                            duration_ms:
+                              type: number
+                              description: how long the request took to complete
                             status_code:
                               type: integer
                               description: the HTTP status code of the relay response
@@ -102,14 +105,10 @@ paths:
                     relay_responses: [
                       {
                         duration_ms: 59.941,
-                        response: {
-                          status_code: 200,
-                          data: {
-                            height: 52844
-
-                          }
+                        status_code: 200,
+                        data: {
+                          height: 52844
                         }
-
                       }
                     ]
 
