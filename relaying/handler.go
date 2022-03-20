@@ -2,8 +2,8 @@ package relaying
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"github.com/itsnoproblem/pokt-lint/pocket"
 	"github.com/itsnoproblem/pokt-lint/rpc"
 	nethttp "net/http"
 	"time"
@@ -28,14 +28,17 @@ type RelayTestResult struct {
 	Successful     bool              `json:"success"`
 	StatusCode     int               `json:"status_code"`
 	Message        string            `json:"message"`
-	DurationMS     float64           `json:"duration_ms"`
+	DurationAvgMS  float64           `json:"duration_avg_ms"`
+	DurationMinMS  float64           `json:"duration_min_ms"`
+	DurationMaxMS  float64           `json:"duration_max_ms"`
 	RelayRequest   rpc.Payload       `json:"relay_request"`
 	RelayResponses []RelayTestSample `json:"relay_responses"`
 }
 
 type RelayTestSample struct {
-	DurationMS    float64              `json:"duration_ms"`
-	RelayResponse pocket.RelayResponse `json:"response"`
+	DurationMS float64         `json:"duration_ms"`
+	StatusCode int             `json:"status_code"`
+	Data       json.RawMessage `json:"data"`
 }
 
 // RelayTestResponse is a map of chain ID to RelayTestResult

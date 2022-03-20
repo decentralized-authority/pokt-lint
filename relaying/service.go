@@ -47,6 +47,8 @@ func (c nodeChecker) RunRelayTests(_ context.Context, numSamples int64) (map[str
 		}
 
 		totalExecTime := int64(0)
+		fastest := int64(0)
+		slowest := int64(0)
 		for i := int64(0); i < numSamples; i++ {
 			t := timer.Start()
 			res, err := c.pocketProvider.SimulateRelay(req)
@@ -69,18 +71,25 @@ func (c nodeChecker) RunRelayTests(_ context.Context, numSamples int64) (map[str
 			}
 
 			duration := t.Elapsed().Microseconds()
+			if fastest == 0 || duration < fastest {
+				fastest = duration
+			}
+			if duration > slowest {
+				slowest = duration
+			}
+
 			result.RelayResponses[i] = RelayTestSample{
 				DurationMS: float64(duration) / 1000,
-				RelayResponse: pocket.RelayResponse{
-					StatusCode: res.StatusCode,
-					Data:       res.Data,
-				},
+				StatusCode: res.StatusCode,
+				Data:       res.Data,
 			}
 
 			totalExecTime += duration
 		}
 
-		result.DurationMS = float64(totalExecTime/numSamples) / 1000
+		result.DurationAvgMS = float64(totalExecTime/numSamples) / 1000
+		result.DurationMaxMS = float64(slowest) / 1000
+		result.DurationMinMS = float64(fastest) / 1000
 		chains[chain.ID] = result
 	}
 	return chains, nil
