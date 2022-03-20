@@ -11,6 +11,8 @@ import (
 
 const (
 	httpClientTimeoutSec = 20
+	maxNumSamples        = 50
+	defaultNumSamples    = 5
 )
 
 // RelayTestRequest represents the request format the relaying service accepts
@@ -51,7 +53,11 @@ func HandleRequest(ctx context.Context, req RelayTestRequest) (RelayTestResponse
 	}
 
 	if req.NumSamples == 0 {
-		req.NumSamples = 5
+		req.NumSamples = defaultNumSamples
+	}
+
+	if req.NumSamples > maxNumSamples {
+		return RelayTestResponse{}, fmt.Errorf("num_samples cannot exceed %d", maxNumSamples)
 	}
 
 	linter, err := NewNodeChecker(req.NodeID, req.NodeURL, req.Chains, &httpClient)
