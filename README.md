@@ -82,7 +82,8 @@ git clone https://github.com/itsnoproblem/pokt-lint
 
 # build the commands
 cd pokt-lint
-docker build .
+docker build -t pokt-lint .
+docker run --rm -ti -v [path_to_host_build_output_dir]:/app/build pokt-lint build-commands
 ```
 ---
 
