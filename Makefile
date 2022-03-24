@@ -33,7 +33,7 @@ docserver-stop: ## Stop the interactive spec
 docker-build-image: ## Builds the docker image
 	docker build -t pokt-lint .
 
-docker-remove-image: ## Builds the docker image
+docker-remove-image: ## Removes the docker image
 	docker rmi pokt-lint
 
 docker-build-commands: ## Builds the commands
