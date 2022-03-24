@@ -32,11 +32,16 @@ paths:
                   type: string
                   description: The id (address) of the node. Ignored if chains param is set.
                   example: 4fdb144edcfd0d44be506facxxxxxxxxxxxxxxxx
+                num_samples:
+                  type: number
+                  description: The number of samples to take. Default is 5.
+                  example: 5
               example:
                 node_url: https://node-000.ocean1.pokt.tools
                 node_id: 4fdb144edcfd0d44be506facxxxxxxxxxxxxxxxx
                 chain_ids:
                   - '0001'
+                num_samples: 5
       responses:
         '200':
           description: Successful response is a map of chain IDs to response data.
@@ -58,13 +63,17 @@ paths:
                         type: integer
                       message:
                         type: string
-                      duration_ms:
+                      duration_avg_ms:
+                        type: number
+                      duration_min_ms:
+                        type: number
+                      duration_max_ms:
                         type: number
                       relay_request:
                         type: object
                         properties:
                           data:
-                            type: object
+                            type: string
                             description: JSON payload that was sent to the RPC endpoint
                           method:
                             type: string
@@ -87,7 +96,7 @@ paths:
                               type: integer
                               description: the HTTP status code of the relay response
                             data:
-                              type: object
+                              type: string
                               description: the value of the relay response
                 example:
                   "0001":
@@ -96,19 +105,39 @@ paths:
                     success: true
                     status_code: 200
                     message: "OK"
-                    duration_ms: 59.941
+                    duration_avg_ms: 64.039
+                    duration_min_ms: 27.334
+                    duration_max_ms: 100.011
                     relay_request:
-                      data: {}
+                      data: "{}"
                       method: "POST"
                       path: "/v1/query/height"
                       headers: null
                     relay_responses: [
                       {
+                        duration_ms: 88.203,
+                        status_code: 200,
+                        data: "{\"height\":54501}\n"
+                      },
+                      {
+                        duration_ms: 100.011,
+                        status_code: 200,
+                        data: "{\"height\":54501}\n"
+                      },
+                      {
                         duration_ms: 59.941,
                         status_code: 200,
-                        data: {
-                          height: 52844
-                        }
+                        data: "{\"height\":54501}\n"
+                      },
+                      {
+                        duration_ms: 27.334,
+                        status_code: 200,
+                        data: "{\"height\":54501}\n"
+                      },
+                      {
+                        duration_ms: 44.709,
+                        status_code: 200,
+                        data: "{\"height\":54501}\n"
                       }
                     ]
 
@@ -177,4 +206,3 @@ paths:
                       "status_code": 200
                     }
                   ]
-                    
