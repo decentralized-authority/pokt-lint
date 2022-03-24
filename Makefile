@@ -35,9 +35,9 @@ build-commands: ## <-- compiles executables to ${BUILD_DIR}
 	go build -o ${BUILD_DIR}/${RELAY_TEST_BINARY} ${RELAY_TEST_TARGET}
 
 build-lambda: ## <-- builds lambda function bundles in ${BUILD_DIR}
-	make lambda-pingtest
-	make lambda-relaytest
-	make lambda-cors
+	make build-lambda-pingtest
+	make build-lambda-relaytest
+	make build-lambda-cors
 
 build-lambda-pingtest: ## builds the pingtest lambda function
 	GOOS=linux go build -o ${BUILD_DIR}/${LAMBDA_PING_TEST_BINARY} ${LAMBDA_PING_TEST_TARGET}

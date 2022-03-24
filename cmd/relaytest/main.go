@@ -15,6 +15,7 @@ func main() {
 	nodeURL := flag.String("url", "", "node url")
 	nodeID := flag.String("id", "", "node id")
 	chainsArg := flag.String("chains", "", "comma separated chains ids, eg: -chains=0001,0003,0005")
+	numSamples := flag.Int64("num_samples", 5, "number of samples to collect")
 	flag.Parse()
 
 	if *nodeURL == "" || *nodeID == "" {
@@ -31,9 +32,10 @@ func main() {
 
 	ctx := context.Background()
 	req := relaying.RelayTestRequest{
-		NodeURL: *nodeURL,
-		NodeID:  *nodeID,
-		Chains:  chains,
+		NodeURL:    *nodeURL,
+		NodeID:     *nodeID,
+		Chains:     chains,
+		NumSamples: *numSamples,
 	}
 	response, err := relaying.HandleRequest(ctx, req)
 	if err != nil {

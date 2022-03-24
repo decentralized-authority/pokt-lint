@@ -75,15 +75,20 @@ paths:
                           headers:
                             type: object
                             description: a key value pair map of additional headers that were sent in the RPC request
-                      relay_response:
-                        type: object
-                        properties:
-                          status_code:
-                            type: integer
-                            description: the HTTP status code of the relay response
-                          data:
-                            type: object
-                            description: the value of the relay response
+                      relay_responses:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            duration_ms:
+                              type: number
+                              description: how long the request took to complete
+                            status_code:
+                              type: integer
+                              description: the HTTP status code of the relay response
+                            data:
+                              type: object
+                              description: the value of the relay response
                 example:
                   "0001":
                     chain_id: "0001"
@@ -97,12 +102,15 @@ paths:
                       method: "POST"
                       path: "/v1/query/height"
                       headers: null
-                    relay_response:
-                      status_code: 200
-                      data: {
-                        height: 52844
-
+                    relay_responses: [
+                      {
+                        duration_ms: 59.941,
+                        status_code: 200,
+                        data: {
+                          height: 52844
+                        }
                       }
+                    ]
 
 
   /ping-test:
