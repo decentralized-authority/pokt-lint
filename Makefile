@@ -1,6 +1,6 @@
 $(V).SILENT:
 
-BUILD_DIR=./build
+BUILD_DIR=${CURDIR}/build
 
 LAMBDA_PING_TEST_BINARY=LambdaPingTestHandler
 LAMBDA_RELAY_TEST_BINARY=LambdaRelayTestHandler
@@ -24,11 +24,23 @@ help: ## Show this help message.
 	egrep '^(.+)\:\ ##\ (.+)' Makefile | column -t -c 2 -s ':#'
 
 docserver: ## Run an interactive OpenAPI spec on port 3333
-	docker-compose up -d 
+	docker-compose up -d
 	# Visit documentation at http://localhost:3333
 
 docserver-stop: ## Stop the interactive spec
 	docker-compose down
+
+docker-build-image: ## Builds the docker image
+	docker build -t pokt-lint .
+
+docker-remove-image: ## Builds the docker image
+	docker rmi pokt-lint
+
+docker-build-commands: ## Builds the commands
+	docker run --rm -ti -v ${BUILD_DIR}:/app/build pokt-lint build-commands
+
+docker-build-lambda: ## Builds the lambda functions
+	docker run --rm -ti -v ${BUILD_DIR}:/app/build pokt-lint build-lambda
 
 build-commands: ## <-- compiles executables to ${BUILD_DIR}
 	go build -o ${BUILD_DIR}/${PING_TEST_BINARY} ${PING_TEST_TARGET}
@@ -91,4 +103,4 @@ test: ## runs the unit tests
 clean: ## deletes build artifacts
 	go clean
 	rm -f ${LAMBDA_PING_TEST_BINARY} ${LAMBDA_RELAY_TEST_BINARY} ${PING_TEST_BINARY} ${RELAY_TEST_BINARY} ${LAMBDA_PING_TEST_BINARY}.zip ${LAMBDA_RELAY_TEST_BINARY}.zip
-	rm -f ${BUILD_DIR}/${LAMBDA_CORS_BINARY} ${BUILD_DIR}/${LAMBDA_CORS_BINARY}.zip 
+	rm -f ${BUILD_DIR}/${LAMBDA_CORS_BINARY} ${BUILD_DIR}/${LAMBDA_CORS_BINARY}.zip
