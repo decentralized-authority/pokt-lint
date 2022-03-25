@@ -25,7 +25,7 @@ help: ## Show this help message.
 
 docserver: ## Run an interactive OpenAPI spec on port 3333
 	docker-compose up -d
-	# Visit documentation at http://localhost:3333
+	echo Visit documentation at http://localhost:3333
 
 docserver-stop: ## Stop the interactive spec
 	docker-compose down
