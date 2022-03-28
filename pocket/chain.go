@@ -32,8 +32,10 @@ var allChains = map[string]string{
 	"000B": "Polygon Archival",
 	"000F": "Polygon Mumbai",
 	"0006": "Solana",
-	"0027": "xDAI",
-	"000C": "xDAI Archival",
+	"0027": "Gnosis Chain",
+	"000C": "Gnosis Chain Archival",
+	"0029": "Algorand",
+	"0047": "OKExChain",
 }
 
 // ChainFromID returns the chain for a given ID, or an error if not found
