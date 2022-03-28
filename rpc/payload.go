@@ -8,6 +8,7 @@ const (
 	avaxIsBootstrapped = `{"jsonrpc":"2.0","id":1,"method":"info.isBootstrapped","params":{"chain":"X"}}`
 	ethBlockNumber     = `{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":64}`
 	hmyBlockNumber     = `{"jsonrpc":"2.0","method":"hmy_blockNumber","params":[],"id":64}`
+	algoStatus         = `{}`
 )
 
 // Payload represents an RPC payload sent to a pocket network servicer
@@ -27,6 +28,8 @@ func NewPayload(chainID string) Payload {
 		return Payload{Method: http.MethodPost, Path: "/", Data: btcGetBlockCount}
 	case "0003":
 		return Payload{Method: http.MethodPost, Path: "/ext/info", Data: avaxIsBootstrapped}
+	case "0029":
+		return Payload{Method: http.MethodGet, Path: "/v2/status", Data: algoStatus}
 	case "0040":
 		return Payload{Method: http.MethodPost, Path: "/", Data: hmyBlockNumber}
 	default:
