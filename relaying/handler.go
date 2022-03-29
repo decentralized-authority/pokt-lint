@@ -4,15 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/itsnoproblem/pokt-lint/http"
+	"github.com/itsnoproblem/pokt-lint/pocket"
 	"github.com/itsnoproblem/pokt-lint/rpc"
-	nethttp "net/http"
-	"time"
 )
 
 const (
-	httpClientTimeoutSec = 20
-	maxNumSamples        = 50
-	defaultNumSamples    = 5
+	maxNumSamples     = 50
+	defaultNumSamples = 5
 )
 
 // RelayTestRequest represents the request format the relaying service accepts
@@ -47,10 +46,9 @@ type RelayTestSample struct {
 type RelayTestResponse map[string]RelayTestResult
 
 // HandleRequest handles a relaying service request
-func HandleRequest(ctx context.Context, req RelayTestRequest) (RelayTestResponse, error) {
-	httpClient := nethttp.Client{
-		Timeout: httpClientTimeoutSec * time.Second,
-	}
+func HandleRequest(ctx context.Context, req RelayTestRequest, httpClient http.Client) (RelayTestResponse, error) {
+
+	pocketProvider := pocket.NewProvider(httpClient, req.NodeURL)
 
 	if req.NumSamples == 0 {
 		req.NumSamples = defaultNumSamples
@@ -60,7 +58,7 @@ func HandleRequest(ctx context.Context, req RelayTestRequest) (RelayTestResponse
 		return RelayTestResponse{}, fmt.Errorf("num_samples cannot exceed %d", maxNumSamples)
 	}
 
-	linter, err := NewNodeChecker(req.NodeID, req.NodeURL, req.Chains, &httpClient)
+	linter, err := NewNodeChecker(req.NodeID, req.NodeURL, req.Chains, pocketProvider)
 	if err != nil {
 		return RelayTestResponse{}, fmt.Errorf("relaying.HandleRequest: %s", err)
 	}

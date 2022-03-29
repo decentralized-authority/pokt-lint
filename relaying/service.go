@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/itsnoproblem/pokt-lint/http"
 	"github.com/itsnoproblem/pokt-lint/pocket"
 	"github.com/itsnoproblem/pokt-lint/rpc"
 	"github.com/itsnoproblem/pokt-lint/timer"
@@ -30,6 +29,14 @@ type nodeChecker struct {
 func (c nodeChecker) RunRelayTests(_ context.Context, numSamples int64) (map[string]RelayTestResult, error) {
 	if len(c.nodeChains) < 1 {
 		return nil, fmt.Errorf("no chains for node %s", c.nodeID)
+	}
+
+	simIsEnabled, err := c.pocketProvider.SimulateRelayIsEnabled()
+	if err != nil {
+		return nil, fmt.Errorf("RunRelayTests: %s", err)
+	}
+	if !simIsEnabled {
+		return nil, fmt.Errorf("simulateRelay is not enabled")
 	}
 
 	chains := make(map[string]RelayTestResult, len(c.nodeChains))
@@ -111,11 +118,10 @@ func (c *nodeChecker) init() error {
 }
 
 // NewNodeChecker returns a node checker relaying service
-func NewNodeChecker(nodeID, nodeAddress string, chains []string, httpClient http.Client) (Service, error) {
+func NewNodeChecker(nodeID, nodeAddress string, chains []string, provider pocket.Provider) (Service, error) {
 	var err error
 	empty := nodeChecker{}
 	chainObjects := make([]pocket.Chain, len(chains))
-	pocketProvider := pocket.NewProvider(httpClient, nodeAddress)
 
 	for i, c := range chains {
 		if chainObjects[i], err = pocket.ChainFromID(c); err != nil {
@@ -124,7 +130,7 @@ func NewNodeChecker(nodeID, nodeAddress string, chains []string, httpClient http
 	}
 
 	nc := nodeChecker{
-		pocketProvider: pocketProvider,
+		pocketProvider: provider,
 		nodeID:         nodeID,
 		nodeURL:        nodeAddress,
 		nodeChains:     chainObjects,

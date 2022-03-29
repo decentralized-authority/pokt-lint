@@ -13,10 +13,11 @@ import (
 type Client interface {
 	Do(req *http.Request) (*http.Response, error)
 	Get(url string) (*http.Response, error)
+	Options(url string) (*http.Response, error)
 }
 
 // NewClientWithLogger returns a client that writes log messages
-func NewClientWithLogger(c Client, l *log.Logger) Client {
+func NewClientWithLogger(c *http.Client, l *log.Logger) Client {
 	return &clientWithLogger{
 		client: c,
 		logger: l,
@@ -24,7 +25,7 @@ func NewClientWithLogger(c Client, l *log.Logger) Client {
 }
 
 type clientWithLogger struct {
-	client Client
+	client *http.Client
 	logger *log.Logger
 }
 
@@ -49,6 +50,14 @@ func (c *clientWithLogger) Get(url string) (*http.Response, error) {
 	}
 	c.logInfo(fmt.Sprintf("%s: %s", url, t.Elapsed().String()))
 	return resp, nil
+}
+
+func (c *clientWithLogger) Options(url string) (*http.Response, error) {
+	req, err := http.NewRequest("OPTIONS", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	return c.Do(req)
 }
 
 func (c *clientWithLogger) logError(msg string, err error) {

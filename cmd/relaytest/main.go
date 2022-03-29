@@ -5,11 +5,17 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
+	nethttp "net/http"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/itsnoproblem/pokt-lint/http"
 	"github.com/itsnoproblem/pokt-lint/relaying"
 )
+
+const httpClientTimeoutSec = 20
 
 func main() {
 	nodeURL := flag.String("url", "", "node url")
@@ -37,7 +43,13 @@ func main() {
 		Chains:     chains,
 		NumSamples: *numSamples,
 	}
-	response, err := relaying.HandleRequest(ctx, req)
+
+	c := nethttp.Client{
+		Timeout: httpClientTimeoutSec * time.Second,
+	}
+	httpClient := http.NewClientWithLogger(&c, log.Default())
+
+	response, err := relaying.HandleRequest(ctx, req, httpClient)
 	if err != nil {
 		fmt.Printf("Error from LambdaRelayTestHandler: %s", err)
 		os.Exit(9)

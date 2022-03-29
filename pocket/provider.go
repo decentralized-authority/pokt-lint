@@ -9,8 +9,6 @@ import (
 	gohttp "net/http"
 	"strconv"
 	"strings"
-
-	"github.com/itsnoproblem/pokt-lint/http"
 )
 
 const (
@@ -24,10 +22,17 @@ type Provider interface {
 	Height() (uint, error)
 	Servicer(address string) (Node, error)
 	SimulateRelay(req RelayRequest) (RelayResponse, error)
+	SimulateRelayIsEnabled() (bool, error)
+}
+
+type HTTPClient interface {
+	Do(req *gohttp.Request) (*gohttp.Response, error)
+	Get(url string) (*gohttp.Response, error)
+	Options(url string) (*gohttp.Response, error)
 }
 
 // NewProvider returns a new pocket provider
-func NewProvider(c http.Client, pocketURL string) Provider {
+func NewProvider(c HTTPClient, pocketURL string) Provider {
 	return provider{
 		client:    c,
 		pocketURL: pocketURL,
@@ -35,7 +40,7 @@ func NewProvider(c http.Client, pocketURL string) Provider {
 }
 
 type provider struct {
-	client    http.Client
+	client    HTTPClient
 	pocketURL string
 }
 
@@ -103,6 +108,21 @@ func (p provider) SimulateRelay(simRequest RelayRequest) (RelayResponse, error) 
 		StatusCode: statusCode,
 		Data:       respBody,
 	}, nil
+}
+
+func (p provider) SimulateRelayIsEnabled() (bool, error) {
+	url := fmt.Sprintf("%s/%s", p.pocketURL, urlPathSimulateRelay)
+
+	res, err := p.client.Options(url)
+	if err != nil {
+		return false, fmt.Errorf("SimulateRelayIsEnabled: %s", err)
+	}
+
+	if res.StatusCode != gohttp.StatusOK {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func (p provider) doRequest(url string, reqObj interface{}) ([]byte, int, error) {
