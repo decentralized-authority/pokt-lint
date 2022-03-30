@@ -3,6 +3,7 @@ package relaying_test
 import (
 	"context"
 	"github.com/itsnoproblem/pokt-lint/mock"
+	"github.com/itsnoproblem/pokt-lint/pocket"
 	"github.com/itsnoproblem/pokt-lint/relaying"
 	"testing"
 )
@@ -13,7 +14,8 @@ func TestNodeChecker_RunRelayTests(t *testing.T) {
 	chains := []string{"0001"}
 
 	client := mock.NewFakeHTTPClient(true)
-	svc, err := relaying.NewNodeChecker(nodeId, nodeAddress, chains, client)
+	prv := pocket.NewProvider(client, "https://1.2.3.4:443")
+	svc, err := relaying.NewNodeChecker(nodeId, nodeAddress, chains, prv)
 	if err != nil {
 		t.Fatalf("got error instantiating node checker: %s", err)
 	}
