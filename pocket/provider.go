@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
-	gohttp "net/http"
+	nethttp "net/http"
 	"strconv"
 	"strings"
 )
@@ -26,9 +26,9 @@ type Provider interface {
 }
 
 type HTTPClient interface {
-	Do(req *gohttp.Request) (*gohttp.Response, error)
-	Get(url string) (*gohttp.Response, error)
-	Options(url string) (*gohttp.Response, error)
+	Do(req *nethttp.Request) (*nethttp.Response, error)
+	Get(url string) (*nethttp.Response, error)
+	Options(url string) (*nethttp.Response, error)
 }
 
 // NewProvider returns a new pocket provider
@@ -118,7 +118,7 @@ func (p provider) SimulateRelayIsEnabled() (bool, error) {
 		return false, fmt.Errorf("SimulateRelayIsEnabled: %s", err)
 	}
 
-	if res.StatusCode != gohttp.StatusOK {
+	if res.StatusCode != nethttp.StatusOK {
 		return false, nil
 	}
 
@@ -136,7 +136,7 @@ func (p provider) doRequest(url string, reqObj interface{}) ([]byte, int, error)
 	}
 	req := bytes.NewBuffer(reqBody)
 
-	clientReq, err := gohttp.NewRequest(gohttp.MethodPost, url, req)
+	clientReq, err := nethttp.NewRequest(nethttp.MethodPost, url, req)
 	if err != nil {
 		return nil, 500, fmt.Errorf("doRequest got error creating request: %s", err)
 	}

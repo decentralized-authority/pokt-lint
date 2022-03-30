@@ -1,12 +1,17 @@
 package mock
 
 import (
+	nethttp "net/http"
+
 	"github.com/itsnoproblem/pokt-lint/http"
-	gohttp "net/http"
 )
 
 type fakeHTTPClient struct {
 	returnSuccessResponses bool
+}
+
+func (c fakeHTTPClient) Options(url string) (*nethttp.Response, error) {
+	return c.fakeResponse()
 }
 
 // NewFakeHTTPClient returns a mock HTTP client
@@ -21,15 +26,15 @@ func (c fakeHTTPClient) ReturnSuccessResponses(newValue bool) http.Client {
 	return c
 }
 
-func (c fakeHTTPClient) Do(req *gohttp.Request) (*gohttp.Response, error) {
+func (c fakeHTTPClient) Do(req *nethttp.Request) (*nethttp.Response, error) {
 	return c.fakeResponse()
 }
 
-func (c fakeHTTPClient) Get(url string) (*gohttp.Response, error) {
+func (c fakeHTTPClient) Get(url string) (*nethttp.Response, error) {
 	return c.fakeResponse()
 }
 
-func (c fakeHTTPClient) fakeResponse() (*gohttp.Response, error) {
+func (c fakeHTTPClient) fakeResponse() (*nethttp.Response, error) {
 	var statusCode int
 	var status string
 	if c.returnSuccessResponses {
@@ -40,7 +45,7 @@ func (c fakeHTTPClient) fakeResponse() (*gohttp.Response, error) {
 		status = "Internal Server Error"
 	}
 
-	res := gohttp.Response{
+	res := nethttp.Response{
 		Status:     status,
 		StatusCode: statusCode,
 	}
