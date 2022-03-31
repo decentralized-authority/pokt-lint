@@ -14,7 +14,7 @@ func TestNodeChecker_RunRelayTests(t *testing.T) {
 	chains := []string{"0001"}
 
 	client := mock.NewFakeHTTPClient(true)
-	prv := pocket.NewProvider(client, "https://1.2.3.4:443")
+	prv := pocket.NewProvider("https://1.2.3.4:443", client)
 	svc, err := relaying.NewNodeChecker(nodeId, nodeAddress, chains, prv)
 	if err != nil {
 		t.Fatalf("got error instantiating node checker: %s", err)

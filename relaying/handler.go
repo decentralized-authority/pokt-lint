@@ -4,6 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/itsnoproblem/pokt-lint/http"
+	"log"
+	nethttp "net/http"
+
 	"github.com/itsnoproblem/pokt-lint/pocket"
 	"github.com/itsnoproblem/pokt-lint/rpc"
 )
@@ -63,10 +67,13 @@ func HandleRequest(ctx context.Context, req RelayTestRequest) (RelayTestResponse
 	}
 
 	if err := req.Validate(); err != nil {
-		return RelayTestResponse{}, fmt.Errorf("Request was invalid: %s", err)
+		return RelayTestResponse{}, fmt.Errorf("request was invalid: %s", err)
 	}
 
-	pocketProvider := pocket.NewProvider(req.NodeURL)
+	client := nethttp.Client{}
+	loggingClient := http.NewWebClient(client, log.Default())
+	pocketProvider := pocket.NewProvider(req.NodeURL, loggingClient)
+
 	linter, err := NewNodeChecker(req.NodeID, req.NodeURL, req.Chains, pocketProvider)
 	if err != nil {
 		return RelayTestResponse{}, fmt.Errorf("relaying.HandleRequest: %s", err)

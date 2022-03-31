@@ -28,7 +28,7 @@ func HandleRequest(ctx context.Context, req PingTestRequest) (PingTestResponse, 
 	httpClient := nethttp.Client{
 		Timeout: httpClientTimeoutSec * time.Second,
 	}
-	client := http.NewClientWithLogger(&httpClient, log.Default())
+	client := http.NewWebClient(httpClient, log.Default())
 	url := fmt.Sprintf("%s/v1", req.NodeURL)
 	pingSvc, err := NewService(client, url)
 	if err != nil {

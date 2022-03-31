@@ -10,31 +10,34 @@ type fakeHTTPClient struct {
 	returnSuccessResponses bool
 }
 
-func (c fakeHTTPClient) Options(url string) (*nethttp.Response, error) {
-	return c.fakeResponse()
-}
-
 // NewFakeHTTPClient returns a mock HTTP client
 func NewFakeHTTPClient(successResponses bool) http.Client {
-	return fakeHTTPClient{returnSuccessResponses: successResponses}
+	c := fakeHTTPClient{
+		returnSuccessResponses: successResponses,
+	}
+	return &c
 }
 
 // ReturnSuccessResponses determines the type of responses the client returns.
 // 200 OK if *true*, 500 Internal Server Error if *false*.
-func (c fakeHTTPClient) ReturnSuccessResponses(newValue bool) http.Client {
+func (c *fakeHTTPClient) ReturnSuccessResponses(newValue bool) http.Client {
 	c.returnSuccessResponses = newValue
 	return c
 }
 
-func (c fakeHTTPClient) Do(req *nethttp.Request) (*nethttp.Response, error) {
+func (c *fakeHTTPClient) Do(req *nethttp.Request) (*nethttp.Response, error) {
 	return c.fakeResponse()
 }
 
-func (c fakeHTTPClient) Get(url string) (*nethttp.Response, error) {
+func (c *fakeHTTPClient) Get(url string) (*nethttp.Response, error) {
 	return c.fakeResponse()
 }
 
-func (c fakeHTTPClient) fakeResponse() (*nethttp.Response, error) {
+func (c *fakeHTTPClient) Options(url string) (*nethttp.Response, error) {
+	return c.fakeResponse()
+}
+
+func (c *fakeHTTPClient) fakeResponse() (*nethttp.Response, error) {
 	var statusCode int
 	var status string
 	if c.returnSuccessResponses {
