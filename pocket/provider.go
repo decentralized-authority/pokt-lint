@@ -27,12 +27,6 @@ type Provider interface {
 	SimulateRelayIsEnabled() (bool, error)
 }
 
-//type HTTPClient interface {
-//	Do(req *nethttp.Request) (*nethttp.Response, error)
-//	Get(url string) (*nethttp.Response, error)
-//	Options(url string) (*nethttp.Response, error)
-//}
-
 // NewProvider returns a new pocket provider
 func NewProvider(pocketURL string, client http.Client) Provider {
 	return provider{
