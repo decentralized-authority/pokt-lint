@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/itsnoproblem/pokt-lint/http"
 	"io"
 	"log"
 	nethttp "net/http"
@@ -32,9 +33,10 @@ type HTTPClient interface {
 }
 
 // NewProvider returns a new pocket provider
-func NewProvider(c HTTPClient, pocketURL string) Provider {
+func NewProvider(pocketURL string) Provider {
+	client := http.NewClientWithLogger(&nethttp.Client{}, log.Default())
 	return provider{
-		client:    c,
+		client:    client,
 		pocketURL: pocketURL,
 	}
 }
@@ -77,9 +79,12 @@ func (p provider) Servicer(address string) (Node, error) {
 		chains[i] = ch
 	}
 
-	stakedBal, err := strconv.ParseUint(nodeResponse.StakedBalance, 10, 64)
-	if err != nil {
-		return Node{}, fmt.Errorf("Node: %s", err)
+	var stakedBal uint64
+	if nodeResponse.StakedBalance != "" {
+		stakedBal, err = strconv.ParseUint(nodeResponse.StakedBalance, 10, 64)
+		if err != nil {
+			return Node{}, fmt.Errorf("failed to parse staked balance (%s): %s", nodeResponse.StakedBalance, err)
+		}
 	}
 
 	return Node{

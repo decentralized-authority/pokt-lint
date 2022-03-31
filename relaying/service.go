@@ -19,19 +19,19 @@ type errResponse struct {
 	Message string `json:"message"`
 }
 
-type nodeChecker struct {
+type service struct {
 	pocketProvider pocket.Provider
 	nodeID         string
 	nodeURL        string
 	nodeChains     []pocket.Chain
 }
 
-func (c nodeChecker) RunRelayTests(_ context.Context, numSamples int64) (map[string]RelayTestResult, error) {
-	if len(c.nodeChains) < 1 {
-		return nil, fmt.Errorf("no chains for node %s", c.nodeID)
+func (s service) RunRelayTests(_ context.Context, numSamples int64) (map[string]RelayTestResult, error) {
+	if len(s.nodeChains) < 1 {
+		return nil, fmt.Errorf("no chains detected for node, try specifying the 'chain_ids' parameter")
 	}
 
-	simIsEnabled, err := c.pocketProvider.SimulateRelayIsEnabled()
+	simIsEnabled, err := s.pocketProvider.SimulateRelayIsEnabled()
 	if err != nil {
 		return nil, fmt.Errorf("RunRelayTests: %s", err)
 	}
@@ -39,8 +39,8 @@ func (c nodeChecker) RunRelayTests(_ context.Context, numSamples int64) (map[str
 		return nil, fmt.Errorf("simulateRelay is not enabled")
 	}
 
-	chains := make(map[string]RelayTestResult, len(c.nodeChains))
-	for _, chain := range c.nodeChains {
+	chains := make(map[string]RelayTestResult, len(s.nodeChains))
+	for _, chain := range s.nodeChains {
 		req := pocket.RelayRequest{
 			RelayNetworkID: chain.ID,
 			Payload:        rpc.NewPayload(chain.ID),
@@ -58,7 +58,7 @@ func (c nodeChecker) RunRelayTests(_ context.Context, numSamples int64) (map[str
 		slowest := int64(0)
 		for i := int64(0); i < numSamples; i++ {
 			t := timer.Start()
-			res, err := c.pocketProvider.SimulateRelay(req)
+			res, err := s.pocketProvider.SimulateRelay(req)
 			result.StatusCode = res.StatusCode
 
 			if err != nil {
@@ -102,34 +102,34 @@ func (c nodeChecker) RunRelayTests(_ context.Context, numSamples int64) (map[str
 	return chains, nil
 }
 
-func (c *nodeChecker) init() error {
-	if len(c.nodeChains) > 0 {
+func (s *service) init() error {
+	if len(s.nodeChains) > 0 {
 		return nil
 	}
 
-	node, err := c.pocketProvider.Servicer(c.nodeID)
+	node, err := s.pocketProvider.Servicer(s.nodeID)
 	if err != nil {
-		return fmt.Errorf("init: %s", err)
+		return fmt.Errorf("init: %s: %s", s.nodeID, err)
 	}
 
-	c.nodeURL = node.ServiceURL
-	c.nodeChains = node.Chains
+	s.nodeURL = node.ServiceURL
+	s.nodeChains = node.Chains
 	return nil
 }
 
 // NewNodeChecker returns a node checker relaying service
 func NewNodeChecker(nodeID, nodeAddress string, chains []string, provider pocket.Provider) (Service, error) {
 	var err error
-	empty := nodeChecker{}
+	empty := service{}
 	chainObjects := make([]pocket.Chain, len(chains))
 
 	for i, c := range chains {
 		if chainObjects[i], err = pocket.ChainFromID(c); err != nil {
-			return nodeChecker{}, fmt.Errorf("relaying.NewNodeChecker: %s", err)
+			return service{}, fmt.Errorf("relaying.NewNodeChecker: %s", err)
 		}
 	}
 
-	nc := nodeChecker{
+	nc := service{
 		pocketProvider: provider,
 		nodeID:         nodeID,
 		nodeURL:        nodeAddress,

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/itsnoproblem/pokt-lint/http"
 	"github.com/itsnoproblem/pokt-lint/pocket"
 	"github.com/itsnoproblem/pokt-lint/rpc"
 )
@@ -20,6 +19,18 @@ type RelayTestRequest struct {
 	NodeID     string   `json:"node_id"`
 	Chains     []string `json:"chain_ids"`
 	NumSamples int64    `json:"num_samples"`
+}
+
+func (req RelayTestRequest) Validate() error {
+	if req.NodeID == "" && len(req.Chains) == 0 {
+		return fmt.Errorf("you must specify either 'node_id' or 'chain_ids'")
+	}
+
+	if req.NumSamples > maxNumSamples {
+		return fmt.Errorf("num_samples cannot exceed %d", maxNumSamples)
+	}
+
+	return nil
 }
 
 // RelayTestResult represents the result of a relay test
@@ -46,18 +57,16 @@ type RelayTestSample struct {
 type RelayTestResponse map[string]RelayTestResult
 
 // HandleRequest handles a relaying service request
-func HandleRequest(ctx context.Context, req RelayTestRequest, httpClient http.Client) (RelayTestResponse, error) {
-
-	pocketProvider := pocket.NewProvider(httpClient, req.NodeURL)
-
+func HandleRequest(ctx context.Context, req RelayTestRequest) (RelayTestResponse, error) {
 	if req.NumSamples == 0 {
 		req.NumSamples = defaultNumSamples
 	}
 
-	if req.NumSamples > maxNumSamples {
-		return RelayTestResponse{}, fmt.Errorf("num_samples cannot exceed %d", maxNumSamples)
+	if err := req.Validate(); err != nil {
+		return RelayTestResponse{}, fmt.Errorf("Request was invalid: %s", err)
 	}
 
+	pocketProvider := pocket.NewProvider(req.NodeURL)
 	linter, err := NewNodeChecker(req.NodeID, req.NodeURL, req.Chains, pocketProvider)
 	if err != nil {
 		return RelayTestResponse{}, fmt.Errorf("relaying.HandleRequest: %s", err)
