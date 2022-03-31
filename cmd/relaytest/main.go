@@ -5,12 +5,11 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/itsnoproblem/pokt-lint/relaying"
 	"os"
 	"strings"
-)
 
-const httpClientTimeoutSec = 20
+	"github.com/itsnoproblem/pokt-lint/relaying"
+)
 
 func main() {
 	nodeURL := flag.String("url", "", "node url")
