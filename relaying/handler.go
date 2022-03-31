@@ -25,6 +25,7 @@ type RelayTestRequest struct {
 	NumSamples int64    `json:"num_samples"`
 }
 
+// Validate ensures the validity of all required fields
 func (req RelayTestRequest) Validate() error {
 	if req.NodeID == "" && len(req.Chains) == 0 {
 		return fmt.Errorf("you must specify either 'node_id' or 'chain_ids'")
@@ -51,6 +52,7 @@ type RelayTestResult struct {
 	RelayResponses []RelayTestSample `json:"relay_responses"`
 }
 
+// RelayTestSample is an atomic relay test result
 type RelayTestSample struct {
 	DurationMS float64         `json:"duration_ms"`
 	StatusCode int             `json:"status_code"`
