@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/itsnoproblem/pokt-lint/http"
 	"io"
 	"log"
 	nethttp "net/http"
 	"strconv"
 	"strings"
+
+	"github.com/itsnoproblem/pokt-lint/http"
 )
 
 const (
