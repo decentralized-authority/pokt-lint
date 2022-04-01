@@ -87,6 +87,7 @@ func (c nodeChecker) RunRelayTests(_ context.Context, numSamples int64) (map[str
 		result.DurationMinMS = maths.Min(allDurations)
 		chains[chain.ID] = result
 	}
+
 	return chains, nil
 }
 
