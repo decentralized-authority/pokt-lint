@@ -13,7 +13,7 @@ func TestNodeChecker_RunRelayTests(t *testing.T) {
 	chains := []string{"0001"}
 
 	client := mock.NewFakeHTTPClient(true)
-	svc, err := relaying.NewNodeChecker(nodeId, nodeAddress, chains, client)
+	svc, err := relaying.NewService(nodeId, nodeAddress, chains, client)
 	if err != nil {
 		t.Fatalf("got error instantiating node checker: %s", err)
 	}

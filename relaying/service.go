@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/itsnoproblem/pokt-lint/http"
 	"github.com/itsnoproblem/pokt-lint/pocket"
 	"github.com/itsnoproblem/pokt-lint/rpc"
@@ -15,19 +16,45 @@ type Service interface {
 	RunRelayTests(ctx context.Context, numSamples int64) (map[string]RelayTestResult, error)
 }
 
+// NewService returns a new relaying.Service
+func NewService(nodeID, nodeAddress string, chains []string, httpClient http.Client) (Service, error) {
+	var err error
+	chainObjects := make([]pocket.Chain, len(chains))
+	pocketProvider := pocket.NewProvider(httpClient, nodeAddress)
+
+	for i, c := range chains {
+		if chainObjects[i], err = pocket.ChainFromID(c); err != nil {
+			return service{}, fmt.Errorf("relaying.NewService: %s", err)
+		}
+	}
+
+	nc := service{
+		pocketProvider: pocketProvider,
+		nodeID:         nodeID,
+		nodeURL:        nodeAddress,
+		nodeChains:     chainObjects,
+	}
+
+	if err := nc.init(); err != nil {
+		return service{}, fmt.Errorf("relaying.NewService: %s", err)
+	}
+
+	return nc, nil
+}
+
 type errResponse struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
 }
 
-type nodeChecker struct {
+type service struct {
 	pocketProvider pocket.Provider
 	nodeID         string
 	nodeURL        string
 	nodeChains     []pocket.Chain
 }
 
-func (c nodeChecker) RunRelayTests(_ context.Context, numSamples int64) (map[string]RelayTestResult, error) {
+func (c service) RunRelayTests(_ context.Context, numSamples int64) (map[string]RelayTestResult, error) {
 	if len(c.nodeChains) < 1 {
 		return nil, fmt.Errorf("no chains for node %s", c.nodeID)
 	}
@@ -95,7 +122,7 @@ func (c nodeChecker) RunRelayTests(_ context.Context, numSamples int64) (map[str
 	return chains, nil
 }
 
-func (c *nodeChecker) init() error {
+func (c *service) init() error {
 	if len(c.nodeChains) > 0 {
 		return nil
 	}
@@ -108,31 +135,4 @@ func (c *nodeChecker) init() error {
 	c.nodeURL = node.ServiceURL
 	c.nodeChains = node.Chains
 	return nil
-}
-
-// NewNodeChecker returns a node checker relaying service
-func NewNodeChecker(nodeID, nodeAddress string, chains []string, httpClient http.Client) (Service, error) {
-	var err error
-	empty := nodeChecker{}
-	chainObjects := make([]pocket.Chain, len(chains))
-	pocketProvider := pocket.NewProvider(httpClient, nodeAddress)
-
-	for i, c := range chains {
-		if chainObjects[i], err = pocket.ChainFromID(c); err != nil {
-			return nodeChecker{}, fmt.Errorf("relaying.NewNodeChecker: %s", err)
-		}
-	}
-
-	nc := nodeChecker{
-		pocketProvider: pocketProvider,
-		nodeID:         nodeID,
-		nodeURL:        nodeAddress,
-		nodeChains:     chainObjects,
-	}
-
-	if err := nc.init(); err != nil {
-		return empty, fmt.Errorf("relaying.NewNodeChecker: %s", err)
-	}
-
-	return nc, nil
 }

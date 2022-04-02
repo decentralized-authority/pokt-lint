@@ -60,7 +60,7 @@ func HandleRequest(ctx context.Context, req RelayTestRequest) (RelayTestResponse
 		return RelayTestResponse{}, fmt.Errorf("num_samples cannot exceed %d", maxNumSamples)
 	}
 
-	linter, err := NewNodeChecker(req.NodeID, req.NodeURL, req.Chains, &httpClient)
+	linter, err := NewService(req.NodeID, req.NodeURL, req.Chains, &httpClient)
 	if err != nil {
 		return RelayTestResponse{}, fmt.Errorf("relaying.HandleRequest: %s", err)
 	}
