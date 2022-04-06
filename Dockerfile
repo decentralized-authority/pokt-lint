@@ -1,7 +1,4 @@
-FROM golang:1.17-alpine
-
-RUN apk add --no-cache make
-RUN apk add --no-cache zip
+FROM golang:1.17
 
 WORKDIR /app
 
@@ -11,9 +8,9 @@ RUN go mod download
 
 COPY ./ ./
 
-VOLUME /app/build
-
-ENTRYPOINT ["make"]
+ENV GOOS=linux
+ENV GOARCH=amd64
+ENV CGO_ENABLED=0
 
 # build example:
 # docker build -t pokt-lint .
