@@ -16,4 +16,4 @@ ENV CGO_ENABLED=0
 # docker build -t pokt-lint .
 
 # run example:
-# docker run --rm -ti -v [path_to_host_build_output_dir]:/app/build pokt-lint build-lambda
+# docker run --rm -v $( pwd )/build:/app/build pokt-lint go build -o ./build/ ./cmd/...
