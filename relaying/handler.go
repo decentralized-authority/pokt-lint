@@ -4,15 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/itsnoproblem/pokt-lint/rpc"
+	"github.com/itsnoproblem/pokt-lint/http"
+	"log"
 	nethttp "net/http"
-	"time"
+
+	"github.com/itsnoproblem/pokt-lint/pocket"
+	"github.com/itsnoproblem/pokt-lint/rpc"
 )
 
 const (
-	httpClientTimeoutSec = 20
-	maxNumSamples        = 50
-	defaultNumSamples    = 5
+	maxNumSamples     = 50
+	defaultNumSamples = 5
 )
 
 // RelayTestRequest represents the request format the relaying service accepts
@@ -21,6 +23,19 @@ type RelayTestRequest struct {
 	NodeID     string   `json:"node_id"`
 	Chains     []string `json:"chain_ids"`
 	NumSamples int64    `json:"num_samples"`
+}
+
+// Validate ensures the validity of all required fields
+func (req RelayTestRequest) Validate() error {
+	if req.NodeID == "" && len(req.Chains) == 0 {
+		return fmt.Errorf("you must specify either 'node_id' or 'chain_ids'")
+	}
+
+	if req.NumSamples > maxNumSamples {
+		return fmt.Errorf("num_samples cannot exceed %d", maxNumSamples)
+	}
+
+	return nil
 }
 
 // RelayTestResult represents the result of a relay test
@@ -37,6 +52,7 @@ type RelayTestResult struct {
 	RelayResponses []RelayTestSample `json:"relay_responses"`
 }
 
+// RelayTestSample is an atomic relay test result
 type RelayTestSample struct {
 	DurationMS float64         `json:"duration_ms"`
 	StatusCode int             `json:"status_code"`
@@ -48,19 +64,19 @@ type RelayTestResponse map[string]RelayTestResult
 
 // HandleRequest handles a relaying service request
 func HandleRequest(ctx context.Context, req RelayTestRequest) (RelayTestResponse, error) {
-	httpClient := nethttp.Client{
-		Timeout: httpClientTimeoutSec * time.Second,
-	}
-
 	if req.NumSamples == 0 {
 		req.NumSamples = defaultNumSamples
 	}
 
-	if req.NumSamples > maxNumSamples {
-		return RelayTestResponse{}, fmt.Errorf("num_samples cannot exceed %d", maxNumSamples)
+	if err := req.Validate(); err != nil {
+		return RelayTestResponse{}, fmt.Errorf("request was invalid: %s", err)
 	}
 
-	linter, err := NewNodeChecker(req.NodeID, req.NodeURL, req.Chains, &httpClient)
+	client := nethttp.Client{}
+	loggingClient := http.NewWebClient(client, log.Default())
+	pocketProvider := pocket.NewProvider(req.NodeURL, loggingClient)
+
+	linter, err := NewNodeChecker(req.NodeID, req.NodeURL, req.Chains, pocketProvider)
 	if err != nil {
 		return RelayTestResponse{}, fmt.Errorf("relaying.HandleRequest: %s", err)
 	}
