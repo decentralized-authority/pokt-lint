@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/itsnoproblem/pokt-lint/http"
+	"github.com/itsnoproblem/pokt-lint/maths"
 	"github.com/itsnoproblem/pokt-lint/pocket"
 	"github.com/itsnoproblem/pokt-lint/rpc"
 	"github.com/itsnoproblem/pokt-lint/timer"
@@ -53,9 +55,8 @@ func (s service) RunRelayTests(_ context.Context, numSamples int64) (map[string]
 			RelayResponses: make([]RelayTestSample, numSamples),
 		}
 
-		totalExecTime := int64(0)
-		fastest := int64(0)
-		slowest := int64(0)
+		allDurations := make([]float64, numSamples)
+
 		for i := int64(0); i < numSamples; i++ {
 			t := timer.Start()
 			res, err := s.pocketProvider.SimulateRelay(req)
@@ -78,27 +79,23 @@ func (s service) RunRelayTests(_ context.Context, numSamples int64) (map[string]
 			}
 
 			duration := t.Elapsed().Microseconds()
-			if fastest == 0 || duration < fastest {
-				fastest = duration
-			}
-			if duration > slowest {
-				slowest = duration
-			}
+			durationMS := float64(duration) / 1000
+			allDurations[i] = durationMS
 
 			result.RelayResponses[i] = RelayTestSample{
-				DurationMS: float64(duration) / 1000,
+				DurationMS: durationMS,
 				StatusCode: res.StatusCode,
 				Data:       res.Data,
 			}
-
-			totalExecTime += duration
 		}
 
-		result.DurationAvgMS = float64(totalExecTime/numSamples) / 1000
-		result.DurationMaxMS = float64(slowest) / 1000
-		result.DurationMinMS = float64(fastest) / 1000
+		result.DurationAvgMS = maths.Mean(allDurations)
+		result.DurationMedianMS = maths.Median(allDurations)
+		result.DurationMaxMS = maths.Max(allDurations)
+		result.DurationMinMS = maths.Min(allDurations)
 		chains[chain.ID] = result
 	}
+
 	return chains, nil
 }
 

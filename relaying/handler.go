@@ -40,16 +40,17 @@ func (req RelayTestRequest) Validate() error {
 
 // RelayTestResult represents the result of a relay test
 type RelayTestResult struct {
-	ChainID        string            `json:"chain_id"`
-	ChainName      string            `json:"chain_name"`
-	Successful     bool              `json:"success"`
-	StatusCode     int               `json:"status_code"`
-	Message        string            `json:"message"`
-	DurationAvgMS  float64           `json:"duration_avg_ms"`
-	DurationMinMS  float64           `json:"duration_min_ms"`
-	DurationMaxMS  float64           `json:"duration_max_ms"`
-	RelayRequest   rpc.Payload       `json:"relay_request"`
-	RelayResponses []RelayTestSample `json:"relay_responses"`
+	ChainID          string            `json:"chain_id"`
+	ChainName        string            `json:"chain_name"`
+	Successful       bool              `json:"success"`
+	StatusCode       int               `json:"status_code"`
+	Message          string            `json:"message"`
+	DurationAvgMS    float64           `json:"duration_avg_ms"`
+	DurationMedianMS float64           `json:"duration_median_ms"`
+	DurationMinMS    float64           `json:"duration_min_ms"`
+	DurationMaxMS    float64           `json:"duration_max_ms"`
+	RelayRequest     rpc.Payload       `json:"relay_request"`
+	RelayResponses   []RelayTestSample `json:"relay_responses"`
 }
 
 // RelayTestSample is an atomic relay test result
