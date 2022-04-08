@@ -36,11 +36,18 @@ docker-build-image: ## Builds the docker image
 docker-remove-image: ## Removes the docker image
 	docker rmi pokt-lint
 
+docker-build-all: ## Builds the commands and the lambda functions using Docker
+	docker run --rm -v ${BUILD_DIR}:/app/build pokt-lint make build-all
+
 docker-build-commands: ## Builds the commands
-	docker run --rm -ti -v ${BUILD_DIR}:/app/build pokt-lint build-commands
+	docker run --rm -v ${BUILD_DIR}:/app/build pokt-lint make build-commands
 
 docker-build-lambda: ## Builds the lambda functions
-	docker run --rm -ti -v ${BUILD_DIR}:/app/build pokt-lint build-lambda
+	docker run --rm -v ${BUILD_DIR}:/app/build pokt-lint make build-lambda
+
+build-all: ## Builds the commands and the lambda functions
+	make build-commands
+	make build-lambda
 
 build-commands: ## <-- compiles executables to ${BUILD_DIR}
 	go build -o ${BUILD_DIR}/${PING_TEST_BINARY} ${PING_TEST_TARGET}
