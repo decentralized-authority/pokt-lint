@@ -16,7 +16,7 @@ The public deployment of this tool is available at the following baseURLs:
 - staging: https://2eqrf8goof.execute-api.us-east-1.amazonaws.com/test
 - production: https://2eqrf8goof.execute-api.us-east-1.amazonaws.com/prod
 
-### 👉 [Interactive OpenAPI Spec](https://editor.swagger.io/?url=https://raw.githubusercontent.com/itsnoproblem/pokt-lint/master/doc/node-checker-rpc.yml)
+### 👉 [Interactive OpenAPI Spec](https://editor.swagger.io/?url=https://raw.githubusercontent.com/decentralized-authority/pokt-lint/master/doc/node-checker-rpc.yml)
 
 ### Run the OpenAPI docs locally
 ```bash
@@ -40,11 +40,11 @@ Lambda functions:
 
 You can also build *and* deploy to AWS using the aws-cli:
 ```
-make deploy-lambda-all-qa 
+make deploy-lambda-all-qa
 # or
 make deploy-lambda-all
 ```
-This uses the aws-cli docker container and expects `~/.aws/config` and `~/.aws/credentials` to exist. 
+This uses the aws-cli docker container and expects `~/.aws/config` and `~/.aws/credentials` to exist.
 
 
 ---
@@ -65,25 +65,48 @@ _Requirements:_
 
 ```
 # clone the repository
-git clone https://github.com/itsnoproblem/pokt-lint
+git clone https://github.com/decentralized-authority/pokt-lint
 
 # build the commands
 cd pokt-lint
 make build-commands
 ```
 
-### Option 2) Build in a docker container
+### Option 2) Build using Docker
 _Requirements:_
 - Docker
 
+#### Build for Linux:
 ```
 # clone the repository
-git clone https://github.com/itsnoproblem/pokt-lint
+git clone https://github.com/decentralized-authority/pokt-lint
 
 # build the commands
 cd pokt-lint
 docker build -t pokt-lint .
-docker run --rm -ti -v [path_to_host_build_output_dir]:/app/build pokt-lint build-commands
+docker run --rm -ti -v $PWD/build:/app/build pokt-lint
+```
+
+#### Build for macOS:
+```
+# clone the repository
+git clone https://github.com/decentralized-authority/pokt-lint
+
+# build the commands
+cd pokt-lint
+docker build -t pokt-lint -f Dockerfile-mac .
+docker run --rm -ti -v $PWD/build:/app/build pokt-lint
+```
+
+#### Build for Windows:
+```
+# clone the repository
+git clone https://github.com/decentralized-authority/pokt-lint
+
+# build the commands
+cd pokt-lint
+docker build -t pokt-lint -f Dockerfile-win .
+docker run --rm -ti -v %cd%\build:/app/build pokt-lint
 ```
 ---
 
