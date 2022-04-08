@@ -8,7 +8,6 @@ import (
 	"log"
 	nethttp "net/http"
 
-	"github.com/itsnoproblem/pokt-lint/pocket"
 	"github.com/itsnoproblem/pokt-lint/rpc"
 )
 
@@ -75,9 +74,8 @@ func HandleRequest(ctx context.Context, req RelayTestRequest) (RelayTestResponse
 
 	client := nethttp.Client{}
 	loggingClient := http.NewWebClient(client, log.Default())
-	pocketProvider := pocket.NewProvider(req.NodeURL, loggingClient)
 
-	linter, err := NewNodeChecker(req.NodeID, req.NodeURL, req.Chains, pocketProvider)
+	linter, err := NewService(req.NodeID, req.NodeURL, req.Chains, loggingClient)
 	if err != nil {
 		return RelayTestResponse{}, fmt.Errorf("relaying.HandleRequest: %s", err)
 	}

@@ -6,6 +6,7 @@ const (
 	pocketQueryHeight  = `{}`
 	btcGetBlockCount   = `{"jsonrpc":"1.0","id":"curltest","method":"getblockcount","params":[]}`
 	avaxIsBootstrapped = `{"jsonrpc":"2.0","id":1,"method":"info.isBootstrapped","params":{"chain":"X"}}`
+	avaxGetBlockchains = `{ "jsonrpc":"2.0", "id" :1, "method" :"platform.getBlockchains", "params" :{} }`
 	ethBlockNumber     = `{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":64}`
 	hmyBlockNumber     = `{"jsonrpc":"2.0","method":"hmy_blockNumber","params":[],"id":64}`
 	algoStatus         = `{}`
@@ -28,6 +29,8 @@ func NewPayload(chainID string) Payload {
 		return Payload{Method: http.MethodPost, Path: "/", Data: btcGetBlockCount}
 	case "0003":
 		return Payload{Method: http.MethodPost, Path: "/ext/info", Data: avaxIsBootstrapped}
+	case "03DF":
+		return Payload{Method: http.MethodPost, Path: "/ext/P", Data: avaxGetBlockchains}
 	case "0029":
 		return Payload{Method: http.MethodGet, Path: "/v2/status", Data: algoStatus}
 	case "0040":
