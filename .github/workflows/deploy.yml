@@ -45,3 +45,27 @@ jobs:
           image: amazon/aws-cli
           options: -v ${{ github.workspace }}:/workspace -w /workspace -e AWS_REGION=us-east-1 -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           run: aws lambda update-function-code --function-name poktlint-relaytest-dev --zip-file fileb:///workspace/build/LambdaRelayTestHandler.zip
+
+      - name: Deploy relaytest us-west-1
+        id: docker_run_deploy_relaytest
+        uses: addnab/docker-run-action@v3
+        with:
+          image: amazon/aws-cli
+          options: -v ${{ github.workspace }}:/workspace -w /workspace -e AWS_REGION=us-east-1 -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          run: aws lambda update-function-code --function-name poktlint-relaytest-dev --zip-file fileb:///workspace/build/LambdaRelayTestHandler.zip
+
+      - name: Deploy relaytest eu-west-1
+        id: docker_run_deploy_relaytest
+        uses: addnab/docker-run-action@v3
+        with:
+          image: amazon/aws-cli
+          options: -v ${{ github.workspace }}:/workspace -w /workspace -e AWS_REGION=us-east-1 -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          run: aws lambda update-function-code --function-name poktlint-relaytest-dev --zip-file fileb:///workspace/build/LambdaRelayTestHandler.zip
+
+      - name: Deploy relaytest ap-southeast-1
+        id: docker_run_deploy_relaytest
+        uses: addnab/docker-run-action@v3
+        with:
+          image: amazon/aws-cli
+          options: -v ${{ github.workspace }}:/workspace -w /workspace -e AWS_REGION=us-east-1 -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          run: aws lambda update-function-code --function-name poktlint-relaytest-dev --zip-file fileb:///workspace/build/LambdaRelayTestHandler.zip
