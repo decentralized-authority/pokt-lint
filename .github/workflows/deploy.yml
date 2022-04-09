@@ -39,7 +39,7 @@ jobs:
           run: make build-lambda
 
       - name: Deploy relaytest us-east-1
-        id: docker_run_deploy_relaytest
+        id: docker_run_deploy_relaytest_us-east-1
         uses: addnab/docker-run-action@v3
         with:
           image: amazon/aws-cli
@@ -47,7 +47,7 @@ jobs:
           run: aws lambda update-function-code --function-name poktlint-relaytest-dev --zip-file fileb:///workspace/build/LambdaRelayTestHandler.zip
 
       - name: Deploy relaytest us-west-1
-        id: docker_run_deploy_relaytest
+        id: docker_run_deploy_relaytest_us-west-1
         uses: addnab/docker-run-action@v3
         with:
           image: amazon/aws-cli
@@ -55,7 +55,7 @@ jobs:
           run: aws lambda update-function-code --function-name poktlint-relaytest-dev --zip-file fileb:///workspace/build/LambdaRelayTestHandler.zip
 
       - name: Deploy relaytest eu-west-1
-        id: docker_run_deploy_relaytest
+        id: docker_run_deploy_relaytest_eu-west-1
         uses: addnab/docker-run-action@v3
         with:
           image: amazon/aws-cli
@@ -63,7 +63,7 @@ jobs:
           run: aws lambda update-function-code --function-name poktlint-relaytest-dev --zip-file fileb:///workspace/build/LambdaRelayTestHandler.zip
 
       - name: Deploy relaytest ap-southeast-1
-        id: docker_run_deploy_relaytest
+        id: docker_run_deploy_relaytest_ap-southeast-1
         uses: addnab/docker-run-action@v3
         with:
           image: amazon/aws-cli
