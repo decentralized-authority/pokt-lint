@@ -1,0 +1,23 @@
+FROM golang:1.17
+
+WORKDIR /app
+
+COPY go.mod ./
+COPY go.sum ./
+RUN go mod download
+
+COPY ./ ./
+
+RUN chmod +x ./docker/build-win.sh
+
+ENV GOOS=windows
+ENV GOARCH=amd64
+ENV CGO_ENABLED=0
+
+CMD ["bash", "./docker/build-win.sh"]
+
+# build example:
+# docker build -t pokt-lint .
+
+# run example:
+# docker run --rm -v $( pwd )/build:/app/build pokt-lint go build -o ./build/ ./cmd/...

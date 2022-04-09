@@ -1,0 +1,71 @@
+name: deploy lambda
+
+on:
+  push:
+    branches: [dev]
+
+jobs:
+  build-deploy-lambda-functions:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Check Out Repo
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          driver: docker
+
+      - name: Build Image
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          tags: pokt-lint-builder:latest
+          push: false
+
+      - name: Run image
+        id: docker_run
+        uses: addnab/docker-run-action@v3
+        with:
+          image: pokt-lint-builder:latest
+          options: -v ${{ github.workspace }}:/workspace -w /workspace
+          run: make build-lambda
+
+      - name: Deploy relaytest us-east-1
+        id: docker_run_deploy_relaytest_us-east-1
+        uses: addnab/docker-run-action@v3
+        with:
+          image: amazon/aws-cli
+          options: -v ${{ github.workspace }}:/workspace -w /workspace -e AWS_REGION=us-east-1 -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          run: aws lambda update-function-code --function-name poktlint-relaytest-dev --zip-file fileb:///workspace/build/LambdaRelayTestHandler.zip
+
+      - name: Deploy relaytest us-west-1
+        id: docker_run_deploy_relaytest_us-west-1
+        uses: addnab/docker-run-action@v3
+        with:
+          image: amazon/aws-cli
+          options: -v ${{ github.workspace }}:/workspace -w /workspace -e AWS_REGION=us-west-1 -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          run: aws lambda update-function-code --function-name poktlint-relaytest-dev --zip-file fileb:///workspace/build/LambdaRelayTestHandler.zip
+
+      - name: Deploy relaytest eu-west-1
+        id: docker_run_deploy_relaytest_eu-west-1
+        uses: addnab/docker-run-action@v3
+        with:
+          image: amazon/aws-cli
+          options: -v ${{ github.workspace }}:/workspace -w /workspace -e AWS_REGION=eu-west-1 -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          run: aws lambda update-function-code --function-name poktlint-relaytest-dev --zip-file fileb:///workspace/build/LambdaRelayTestHandler.zip
+
+      - name: Deploy relaytest ap-southeast-1
+        id: docker_run_deploy_relaytest_ap-southeast-1
+        uses: addnab/docker-run-action@v3
+        with:
+          image: amazon/aws-cli
+          options: -v ${{ github.workspace }}:/workspace -w /workspace -e AWS_REGION=ap-southeast-1 -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          run: aws lambda update-function-code --function-name poktlint-relaytest-dev --zip-file fileb:///workspace/build/LambdaRelayTestHandler.zip
