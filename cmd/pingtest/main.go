@@ -30,7 +30,7 @@ func main() {
 	c := gohttp.Client{
 		Timeout: pingTimeoutMS * time.Millisecond,
 	}
-	client := http.NewClientWithLogger(&c, logger)
+	client := http.NewWebClient(c, logger)
 
 	ctx := context.Background()
 	svc, err := pinging.NewService(client, *nodeURL)

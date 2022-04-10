@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
-	gohttp "net/http"
+	nethttp "net/http"
 	"strconv"
 	"strings"
 
@@ -24,12 +24,13 @@ type Provider interface {
 	Height() (uint, error)
 	Servicer(address string) (Node, error)
 	SimulateRelay(req RelayRequest) (RelayResponse, error)
+	SimulateRelayIsEnabled() (bool, error)
 }
 
 // NewProvider returns a new pocket provider
-func NewProvider(c http.Client, pocketURL string) Provider {
+func NewProvider(pocketURL string, client http.Client) Provider {
 	return provider{
-		client:    c,
+		client:    client,
 		pocketURL: pocketURL,
 	}
 }
@@ -72,9 +73,12 @@ func (p provider) Servicer(address string) (Node, error) {
 		chains[i] = ch
 	}
 
-	stakedBal, err := strconv.ParseUint(nodeResponse.StakedBalance, 10, 64)
-	if err != nil {
-		return Node{}, fmt.Errorf("Node: %s", err)
+	var stakedBal uint64
+	if nodeResponse.StakedBalance != "" {
+		stakedBal, err = strconv.ParseUint(nodeResponse.StakedBalance, 10, 64)
+		if err != nil {
+			return Node{}, fmt.Errorf("failed to parse staked balance (%s): %s", nodeResponse.StakedBalance, err)
+		}
 	}
 
 	return Node{
@@ -105,6 +109,21 @@ func (p provider) SimulateRelay(simRequest RelayRequest) (RelayResponse, error) 
 	}, nil
 }
 
+func (p provider) SimulateRelayIsEnabled() (bool, error) {
+	url := fmt.Sprintf("%s/%s", p.pocketURL, urlPathSimulateRelay)
+
+	res, err := p.client.Options(url)
+	if err != nil {
+		return false, fmt.Errorf("SimulateRelayIsEnabled: %s", err)
+	}
+
+	if res.StatusCode != nethttp.StatusOK {
+		return false, nil
+	}
+
+	return true, nil
+}
+
 func (p provider) doRequest(url string, reqObj interface{}) ([]byte, int, error) {
 	var reqBody []byte
 	var err error
@@ -116,7 +135,7 @@ func (p provider) doRequest(url string, reqObj interface{}) ([]byte, int, error)
 	}
 	req := bytes.NewBuffer(reqBody)
 
-	clientReq, err := gohttp.NewRequest(gohttp.MethodPost, url, req)
+	clientReq, err := nethttp.NewRequest(nethttp.MethodPost, url, req)
 	if err != nil {
 		return nil, 500, fmt.Errorf("doRequest got error creating request: %s", err)
 	}

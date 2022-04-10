@@ -1,6 +1,7 @@
 package http
 
 import (
+	"github.com/itsnoproblem/pokt-lint/maths"
 	"github.com/itsnoproblem/pokt-lint/timer"
 	"log"
 	"time"
@@ -21,12 +22,13 @@ type Pinger struct {
 
 // PingStats are the measured timing and outcome of a ping test
 type PingStats struct {
-	NumSent   int64          `json:"num_sent"`
-	NumOk     int64          `json:"num_ok"`
-	MinTimeMS float64        `json:"min_time_ms"`
-	MaxTimeMS float64        `json:"max_time_ms"`
-	AvgTimeMS float64        `json:"avg_time_ms"`
-	Results   []PingResponse `json:"results"`
+	NumSent      int64          `json:"num_sent"`
+	NumOk        int64          `json:"num_ok"`
+	MinTimeMS    float64        `json:"min_time_ms"`
+	MaxTimeMS    float64        `json:"max_time_ms"`
+	AvgTimeMS    float64        `json:"avg_time_ms"`
+	MedianTimeMS float64        `json:"median_time_ms"`
+	Results      []PingResponse `json:"results"`
 }
 
 // PingResponse represents a response to an individual ping request
@@ -46,7 +48,7 @@ func NewPinger(client Client, url string) *Pinger {
 
 // Run executes the ping tests
 func (p *Pinger) Run() (*PingStats, error) {
-	var total, min, max time.Duration
+	allDurations := make([]float64, p.Count)
 	var results = make([]PingResponse, p.Count)
 	success := int64(0)
 
@@ -58,19 +60,11 @@ func (p *Pinger) Run() (*PingStats, error) {
 			continue
 		}
 		duration := t.Elapsed()
-		total += duration
+		allDurations[i] = float64(duration.Microseconds()) / 1000
 
 		results[i] = PingResponse{
 			DurationMS: float64(duration.Microseconds()) / 1000,
 			StatusCode: resp.StatusCode,
-		}
-
-		if min == 0 || duration < min {
-			min = duration
-		}
-
-		if duration > max {
-			max = duration
 		}
 
 		if resp.StatusCode == 200 {
@@ -82,12 +76,13 @@ func (p *Pinger) Run() (*PingStats, error) {
 	}
 
 	p.stats = &PingStats{
-		NumSent:   p.Count,
-		NumOk:     success,
-		MinTimeMS: float64(min.Microseconds()) / 1000,
-		MaxTimeMS: float64(max.Microseconds()) / 1000,
-		AvgTimeMS: float64(total.Microseconds()/p.Count) / 1000,
-		Results:   results,
+		NumSent:      p.Count,
+		NumOk:        success,
+		MinTimeMS:    maths.Min(allDurations),
+		MaxTimeMS:    maths.Max(allDurations),
+		AvgTimeMS:    maths.Mean(allDurations),
+		MedianTimeMS: maths.Median(allDurations),
+		Results:      results,
 	}
 
 	return p.stats, nil

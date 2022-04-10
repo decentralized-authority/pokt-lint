@@ -3,7 +3,7 @@ package http
 import (
 	"fmt"
 	"log"
-	"net/http"
+	nethttp "net/http"
 	"time"
 
 	"github.com/itsnoproblem/pokt-lint/timer"
@@ -11,28 +11,29 @@ import (
 
 // Client is an HTTP client.
 type Client interface {
-	Do(req *http.Request) (*http.Response, error)
-	Get(url string) (*http.Response, error)
+	Do(req *nethttp.Request) (*nethttp.Response, error)
+	Get(url string) (*nethttp.Response, error)
+	Options(url string) (*nethttp.Response, error)
 }
 
-// NewClientWithLogger returns a client that writes log messages
-func NewClientWithLogger(c Client, l *log.Logger) Client {
-	return &clientWithLogger{
+// NewWebClient returns a client that writes log messages
+func NewWebClient(c nethttp.Client, l *log.Logger) Client {
+	return &webClient{
 		client: c,
 		logger: l,
 	}
 }
 
-type clientWithLogger struct {
-	client Client
+type webClient struct {
+	client nethttp.Client
 	logger *log.Logger
 }
 
-func (c *clientWithLogger) Do(req *http.Request) (*http.Response, error) {
+func (c *webClient) Do(req *nethttp.Request) (*nethttp.Response, error) {
 	t := timer.Start()
 	resp, err := c.client.Do(req)
 	if err != nil {
-		c.logError("clientWithLogger.Do", err)
+		c.logError("webClient.Do", err)
 		return resp, err
 	}
 
@@ -40,21 +41,29 @@ func (c *clientWithLogger) Do(req *http.Request) (*http.Response, error) {
 	return resp, nil
 }
 
-func (c *clientWithLogger) Get(url string) (*http.Response, error) {
+func (c *webClient) Get(url string) (*nethttp.Response, error) {
 	t := timer.Start()
 	resp, err := c.client.Get(url)
 	if err != nil {
-		c.logError("clientWithLogger.Get", err)
+		c.logError("webClient.Get", err)
 		return resp, err
 	}
 	c.logInfo(fmt.Sprintf("%s: %s", url, t.Elapsed().String()))
 	return resp, nil
 }
 
-func (c *clientWithLogger) logError(msg string, err error) {
+func (c *webClient) Options(url string) (*nethttp.Response, error) {
+	req, err := nethttp.NewRequest("OPTIONS", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	return c.Do(req)
+}
+
+func (c *webClient) logError(msg string, err error) {
 	c.logger.Printf("ERROR - %s - %s: %s", time.Now().String(), msg, err.Error())
 }
 
-func (c *clientWithLogger) logInfo(msg string) {
+func (c *webClient) logInfo(msg string) {
 	c.logger.Printf("INFO - %s - %s", time.Now().String(), msg)
 }

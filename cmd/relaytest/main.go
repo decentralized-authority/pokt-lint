@@ -37,6 +37,7 @@ func main() {
 		Chains:     chains,
 		NumSamples: *numSamples,
 	}
+
 	response, err := relaying.HandleRequest(ctx, req)
 	if err != nil {
 		fmt.Printf("Error from LambdaRelayTestHandler: %s", err)

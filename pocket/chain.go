@@ -1,9 +1,5 @@
 package pocket
 
-import (
-	"fmt"
-)
-
 // Chain represents a pocket network chain as defined by https://docs.pokt.network/home/resources/references/supported-blockchains
 type Chain struct {
 	ID   string
@@ -13,6 +9,7 @@ type Chain struct {
 var allChains = map[string]string{
 	"0003": "AVAX",
 	"00A3": "AVAX Archival",
+	"03DF": "DeFi Kingdoms",
 	"0004": "BSC",
 	"0010": "BSC Archival",
 	"0021": "ETH",
@@ -42,7 +39,7 @@ var allChains = map[string]string{
 func ChainFromID(id string) (Chain, error) {
 	name, ok := allChains[id]
 	if !ok {
-		return Chain{}, fmt.Errorf("ChainFromID: unknown chain %s", id)
+		name = "Unknown"
 	}
 
 	return Chain{
