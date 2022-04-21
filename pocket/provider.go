@@ -122,7 +122,7 @@ func (p provider) SimulateRelayIsEnabled() (bool, error) {
 		return false, fmt.Errorf("SimulateRelayIsEnabled: %s", err)
 	}
 
-	if res.StatusCode != nethttp.StatusOK {
+	if res.StatusCode != nethttp.StatusOK && res.StatusCode != nethttp.StatusNoContent {
 		return false, nil
 	}
 
