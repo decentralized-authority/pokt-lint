@@ -1,11 +1,11 @@
-name: deploy lambda
+name: deploy lambda dev
 
 on:
   push:
     branches: [dev]
 
 jobs:
-  build-deploy-lambda-functions:
+  build-deploy-lambda-dev-functions:
 
     runs-on: ubuntu-latest
 
