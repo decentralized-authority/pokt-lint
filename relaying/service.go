@@ -8,7 +8,6 @@ import (
 	"github.com/itsnoproblem/pokt-lint/http"
 	"github.com/itsnoproblem/pokt-lint/maths"
 	"github.com/itsnoproblem/pokt-lint/pocket"
-	"github.com/itsnoproblem/pokt-lint/rpc"
 	"github.com/itsnoproblem/pokt-lint/timer"
 )
 
@@ -72,7 +71,7 @@ func (s service) RunRelayTests(_ context.Context, numSamples int64) (map[string]
 	for _, chain := range s.nodeChains {
 		req := pocket.RelayRequest{
 			RelayNetworkID: chain.ID,
-			Payload:        rpc.NewPayload(chain.ID),
+			Payload:        pocket.NewPayload(chain.ID),
 		}
 
 		result := RelayTestResult{
