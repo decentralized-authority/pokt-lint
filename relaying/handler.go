@@ -5,10 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/itsnoproblem/pokt-lint/http"
+	"github.com/itsnoproblem/pokt-lint/pocket"
 	"log"
 	nethttp "net/http"
-
-	"github.com/itsnoproblem/pokt-lint/rpc"
 )
 
 const (
@@ -48,7 +47,7 @@ type RelayTestResult struct {
 	DurationMedianMS float64           `json:"duration_median_ms"`
 	DurationMinMS    float64           `json:"duration_min_ms"`
 	DurationMaxMS    float64           `json:"duration_max_ms"`
-	RelayRequest     rpc.Payload       `json:"relay_request"`
+	RelayRequest     pocket.Payload    `json:"relay_request"`
 	RelayResponses   []RelayTestSample `json:"relay_responses"`
 }
 
