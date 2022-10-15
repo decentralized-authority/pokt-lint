@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/itsnoproblem/pokt-lint/http"
+	"regexp"
 )
 
 // Service - pinging service performs ping tests
@@ -14,6 +15,10 @@ type Service interface {
 
 // NewService returns a new pinging service
 func NewService(client http.Client, url string) (Service, error) {
+
+	slashPatt := regexp.MustCompile(`/+$`)
+	url = slashPatt.ReplaceAllString(url, "")
+
 	pinger := http.NewPinger(client, url)
 	return &service{pinger: pinger}, nil
 }

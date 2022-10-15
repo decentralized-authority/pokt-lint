@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	nethttp "net/http"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -112,10 +111,7 @@ func (p provider) SimulateRelay(simRequest RelayRequest) (RelayResponse, error) 
 
 func (p provider) SimulateRelayIsEnabled() (bool, error) {
 
-	slashPatt := regexp.MustCompile("/$")
-	pocketURL := slashPatt.ReplaceAllString(p.pocketURL, "")
-
-	url := fmt.Sprintf("%s/%s", pocketURL, urlPathSimulateRelay)
+	url := fmt.Sprintf("%s/%s", p.pocketURL, urlPathSimulateRelay)
 
 	res, err := p.client.Options(url)
 	if err != nil {

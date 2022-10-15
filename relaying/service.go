@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
 
 	"github.com/itsnoproblem/pokt-lint/http"
 	"github.com/itsnoproblem/pokt-lint/maths"
@@ -20,6 +21,10 @@ type Service interface {
 func NewService(nodeID, nodeAddress string, chains []string, httpClient http.Client) (Service, error) {
 	var err error
 	chainObjects := make([]pocket.Chain, len(chains))
+
+	slashPatt := regexp.MustCompile(`/+$`)
+	nodeAddress = slashPatt.ReplaceAllString(nodeAddress, "")
+
 	pocketProvider := pocket.NewProvider(nodeAddress, httpClient)
 
 	for i, c := range chains {
@@ -28,11 +33,15 @@ func NewService(nodeID, nodeAddress string, chains []string, httpClient http.Cli
 		}
 	}
 
+	//fmt.Println(nodeAddress)
+	//fmt.Println(slashPatt.ReplaceAllString(nodeAddress, ""))
+
 	nc := service{
 		pocketProvider: pocketProvider,
 		nodeID:         nodeID,
-		nodeURL:        nodeAddress,
-		nodeChains:     chainObjects,
+		//nodeURL:        slashPatt.ReplaceAllString(nodeAddress, ""),
+		nodeURL:    nodeAddress,
+		nodeChains: chainObjects,
 	}
 
 	if err := nc.init(); err != nil {
