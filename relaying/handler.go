@@ -8,6 +8,11 @@ import (
 	"github.com/itsnoproblem/pokt-lint/pocket"
 	"log"
 	nethttp "net/http"
+	"time"
+)
+
+const (
+	httpClientTimeoutSec = 5
 )
 
 const (
@@ -71,7 +76,9 @@ func HandleRequest(ctx context.Context, req RelayTestRequest) (RelayTestResponse
 		return RelayTestResponse{}, fmt.Errorf("request was invalid: %s", err)
 	}
 
-	client := nethttp.Client{}
+	client := nethttp.Client{
+		Timeout: httpClientTimeoutSec * time.Second,
+	}
 	loggingClient := http.NewWebClient(client, log.Default())
 
 	linter, err := NewService(req.NodeID, req.NodeURL, req.Chains, loggingClient)
